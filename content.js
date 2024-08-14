@@ -1,20 +1,29 @@
 function highlightWords() {
-    function wrapWordsWithSpan(word) {
-        return `<vh-t class="highlight-word">${word}</vh-t>`;
+    function needTranslate(word) {
+        if (word in wordsDontknow) {
+            return wordsDontknow[word]
+        } else {
+            return false;
+        }
     }
-
     function processElement(element) {
         if (element.nodeType === Node.TEXT_NODE) {
-            const words = element.textContent.split(/(\s+)/); // Preserva os espaços
+            const words = element.textContent.split(/(\s+)/);
             const fragment = document.createDocumentFragment();
 
             words.forEach(word => {
-                if (/\S/.test(word)) { // Verifica se não é um espaço em branco
-                    const wrapper = document.createElement('vh-t');
-                    wrapper.innerHTML = word;
-                    fragment.appendChild(wrapper);
+                if (/\S/.test(word)) {
+                    const translate = needTranslate(word);
+                    if (translate) {
+                        const wrapper = document.createElement('vh-t');
+                        wrapper.setAttribute('translate', translate);
+                        wrapper.innerHTML = word;
+                        fragment.appendChild(wrapper);
+                    } else {
+                        fragment.appendChild(document.createTextNode(word));
+                    }
                 } else {
-                    fragment.appendChild(document.createTextNode(word)); // Mantém os espaços intactos
+                    fragment.appendChild(document.createTextNode(word));
                 }
             });
 
@@ -31,14 +40,14 @@ function highlightWords() {
 
     const style = document.createElement('style');
     style.textContent = `
-        vh-t {
-            transition: color 0.3s;
-        }
-        vh-t:hover {
+        [translate] {
             color: #3a99bf;
         }
     `;
     document.head.appendChild(style);
 }
 
+const wordsDontknow = {
+    'extreme': 'extremo'
+};
 highlightWords();
