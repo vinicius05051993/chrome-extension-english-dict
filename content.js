@@ -84,6 +84,7 @@ function addTooltipToElements() {
 
 const supabaseUrl = 'https://wgkakdbjxdqfdshqodtw.supabase.co'
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indna2FrZGJqeGRxZmRzaHFvZHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM2NjQ0NzcsImV4cCI6MjAzOTI0MDQ3N30.yAEn_IPXMxK4holhx9osY8nwHPVQIuF8bPZ7_asV0KM'
+// https://github.com/argosopentech/argos-translate/
 
 function getAllWord() {
     var xhr = new XMLHttpRequest();
@@ -117,3 +118,32 @@ const wordsDontknow = getAllWord();
 
 highlightWords();
 addTooltipToElements();
+
+document.ondblclick = function (event) {
+    var sel = (document.selection && document.selection.createRange().text) ||
+        (window.getSelection && window.getSelection().toString());
+
+    if (sel) {
+        const existingTeacher = document.querySelector('.teacher');
+        if (existingTeacher) {
+            existingTeacher.remove();
+        }
+
+        const teacher = document.createElement('div');
+        teacher.className = 'teacher';
+        teacher.textContent = sel;
+
+        teacher.style.left = `${event.pageX}px`;
+        teacher.style.top = `${event.pageY - 50}px`; // 30px para um pequeno offset
+
+        // Adicionar a tooltip ao body
+        document.body.appendChild(teacher);
+    }
+};
+
+document.onclick = function () {
+    const existingTeacher = document.querySelector('.teacher');
+    if (existingTeacher) {
+        existingTeacher.remove();
+    }
+}
