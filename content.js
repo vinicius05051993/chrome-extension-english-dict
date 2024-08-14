@@ -47,7 +47,43 @@ function highlightWords() {
     document.head.appendChild(style);
 }
 
+function addTooltipToElements() {
+    document.querySelectorAll('vh-t').forEach(element => {
+        element.addEventListener('click', function(event) {
+            // Remove qualquer tooltip existente
+            const existingTooltip = document.querySelector('.tooltip');
+            if (existingTooltip) {
+                existingTooltip.remove();
+            }
+
+            // Cria a tooltip
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = element.getAttribute('translate');
+
+            // Obter a posição do elemento clicado
+            const rect = event.target.getBoundingClientRect();
+
+            // Posicionar a tooltip acima do elemento clicado
+            tooltip.style.left = `${rect.left + window.scrollX}px`;
+            tooltip.style.top = `${rect.top + window.scrollY - 30}px`; // 30px para um pequeno offset
+
+            // Adicionar a tooltip ao body
+            document.body.appendChild(tooltip);
+        });
+    });
+
+    // Fecha a tooltip ao clicar em qualquer outro lugar da página
+    document.addEventListener('click', function(event) {
+        const tooltip = document.querySelector('.tooltip');
+        if (tooltip && !event.target.closest('vh-t')) {
+            tooltip.remove();
+        }
+    });
+}
+
 const wordsDontknow = {
     'extreme': 'extremo'
 };
 highlightWords();
+addTooltipToElements();
