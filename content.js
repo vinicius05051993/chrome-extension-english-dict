@@ -82,8 +82,38 @@ function addTooltipToElements() {
     });
 }
 
-const wordsDontknow = {
-    'extreme': 'extremo'
-};
+const supabaseUrl = 'https://wgkakdbjxdqfdshqodtw.supabase.co'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indna2FrZGJqeGRxZmRzaHFvZHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM2NjQ0NzcsImV4cCI6MjAzOTI0MDQ3N30.yAEn_IPXMxK4holhx9osY8nwHPVQIuF8bPZ7_asV0KM'
+
+function getAllWord() {
+    var xhr = new XMLHttpRequest();
+    var result = null;
+
+    // Configura a solicitação
+    xhr.open('GET', `${supabaseUrl}/rest/v1/translate`, false);
+    xhr.setRequestHeader('apikey', supabaseKey);
+    xhr.setRequestHeader('Authorization', `Bearer ${supabaseKey}`);
+
+    // Envia a solicitação
+    xhr.send();
+
+    // Processa a resposta
+    if (xhr.status === 200) {
+        var data = JSON.parse(xhr.responseText);
+        if (data.length > 0) {
+            result = {};
+            for (const row in data) {
+                result[data[row]['word']] = data[row]['translate']
+            }
+        }
+    } else {
+        console.error('Error retrieving value:', xhr.statusText);
+    }
+
+    return result;
+}
+
+const wordsDontknow = getAllWord();
+
 highlightWords();
 addTooltipToElements();
