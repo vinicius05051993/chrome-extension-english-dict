@@ -1,39 +1,44 @@
 function highlightWords() {
-    // Função para envolver cada palavra em um span
-    function wrapWordsWithSpan(text) {
-        return text.replace(/(\b[\wÀ-ú'-]+\b)/g, '<vh-t class="highlight-word">$1</vh-t>');
+    function wrapWordsWithSpan(word) {
+        return `<vh-t class="highlight-word">${word}</vh-t>`;
     }
 
-    // Itera sobre os elementos específicos (h1, h2, h3, h4, p)
     function processElement(element) {
         if (element.nodeType === Node.TEXT_NODE) {
-            const wrapper = document.createElement('vh-t');
-            wrapper.innerHTML = wrapWordsWithSpan(element.textContent);
-            element.replaceWith(wrapper);
+            const words = element.textContent.split(/(\s+)/); // Preserva os espaços
+            const fragment = document.createDocumentFragment();
+
+            words.forEach(word => {
+                if (/\S/.test(word)) { // Verifica se não é um espaço em branco
+                    const wrapper = document.createElement('vh-t');
+                    wrapper.innerHTML = word;
+                    fragment.appendChild(wrapper);
+                } else {
+                    fragment.appendChild(document.createTextNode(word)); // Mantém os espaços intactos
+                }
+            });
+
+            element.replaceWith(fragment);
         } else if (element.nodeType === Node.ELEMENT_NODE) {
-            // Processa apenas elementos de texto dentro de h1, h2, h3, h4, p
-            if (['H1', 'H2', 'H3', 'H4', 'P', 'span'].includes(element.nodeName)) {
+            if (['H1', 'H2', 'H3', 'H4', 'P', 'SPAN'].includes(element.nodeName)) {
                 element.childNodes.forEach(child => processElement(child));
             }
         }
     }
 
-    // Seleciona todos os elementos h1, h2, h3, h4 e p e processa
     const elementsToProcess = document.querySelectorAll('h1, h2, h3, h4, p, span');
     elementsToProcess.forEach(element => processElement(element));
 
-    // Adiciona a regra CSS para a classe .highlight-word
     const style = document.createElement('style');
     style.textContent = `
-        .highlight-word {
+        vh-t {
             transition: color 0.3s;
         }
-        .highlight-word:hover {
-            color: blue;
+        vh-t:hover {
+            color: #3a99bf;
         }
     `;
     document.head.appendChild(style);
 }
 
-// Chama a função para destacar as palavras
 highlightWords();
