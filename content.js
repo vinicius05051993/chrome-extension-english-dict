@@ -50,25 +50,20 @@ function highlightWords() {
 function addTooltipToElements() {
     document.querySelectorAll('vh-t').forEach(element => {
         element.addEventListener('click', function(event) {
-            // Remove qualquer tooltip existente
             const existingTooltip = document.querySelector('.tooltip');
             if (existingTooltip) {
                 existingTooltip.remove();
             }
 
-            // Cria a tooltip
             const tooltip = document.createElement('div');
             tooltip.className = 'tooltip';
             tooltip.textContent = element.getAttribute('translate');
 
-            // Obter a posição do elemento clicado
             const rect = event.target.getBoundingClientRect();
 
-            // Posicionar a tooltip acima do elemento clicado
             tooltip.style.left = `${rect.left + window.scrollX}px`;
             tooltip.style.top = `${rect.top + window.scrollY - 30}px`; // 30px para um pequeno offset
 
-            // Adicionar a tooltip ao body
             document.body.appendChild(tooltip);
         });
     });
@@ -82,23 +77,63 @@ function addTooltipToElements() {
     });
 }
 
-const supabaseUrl = 'https://wgkakdbjxdqfdshqodtw.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indna2FrZGJqeGRxZmRzaHFvZHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM2NjQ0NzcsImV4cCI6MjAzOTI0MDQ3N30.yAEn_IPXMxK4holhx9osY8nwHPVQIuF8bPZ7_asV0KM'
-// https://github.com/argosopentech/argos-translate/
+var apiTranslateKey;
+var supabaseUrl;
+var supabaseKey;
+
+function getSecureKey(keyName) {
+    return new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({ action: keyName }, (response) => {
+            if (response && response.key) {
+                switch (keyName) {
+                    case 'getSecretTranslateKey':
+                        apiTranslateKey = response.key;
+                        break;
+                    case 'supabaseUrl':
+                        supabaseUrl = response.key;
+                        break;
+                    case 'supabaseKey':
+                        supabaseKey = response.key;
+                        break;
+                    default:
+                        console.warn(`Unknown keyName: ${keyName}`);
+                        break;
+                }
+                resolve(response.key);
+            } else {
+                reject('Não foi possível obter o secretKey.');
+            }
+        });
+    });
+}
+
+async function loadAllKeys() {
+    try {
+        await getSecureKey('getSecretTranslateKey');
+        await getSecureKey('supabaseUrl');
+        await getSecureKey('supabaseKey');
+
+        wordsDontknow = getAllWord();
+
+        highlightWords();
+        addTooltipToElements();
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+loadAllKeys();
 
 function getAllWord() {
     var xhr = new XMLHttpRequest();
     var result = null;
 
-    // Configura a solicitação
     xhr.open('GET', `${supabaseUrl}/rest/v1/translate`, false);
     xhr.setRequestHeader('apikey', supabaseKey);
     xhr.setRequestHeader('Authorization', `Bearer ${supabaseKey}`);
 
-    // Envia a solicitação
     xhr.send();
 
-    // Processa a resposta
     if (xhr.status === 200) {
         var data = JSON.parse(xhr.responseText);
         if (data.length > 0) {
@@ -114,10 +149,26 @@ function getAllWord() {
     return result;
 }
 
-const wordsDontknow = getAllWord();
+let wordsDontknow = {};
 
-highlightWords();
-addTooltipToElements();
+function translateWord(wordToTranslate) {
+    const targetLanguage = 'pt';
+    const url = `https://translation.googleapis.com/language/translate/v2?key=${apiTranslateKey}&q=${encodeURIComponent(wordToTranslate)}&target=${targetLanguage}`;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url, false);
+    xhr.send();
+
+    if (xhr.status === 200) {
+        const response = JSON.parse(xhr.responseText);
+        const translatedText = response.data.translations[0].translatedText;
+        console.log(`Translated Text: ${translatedText}`);
+        return translatedText; // Retorna a tradução
+    } else {
+        console.error('Error:', xhr.statusText);
+        return null;
+    }
+}
 
 document.ondblclick = function (event) {
     var sel = (document.selection && document.selection.createRange().text) ||
@@ -131,12 +182,24 @@ document.ondblclick = function (event) {
 
         const teacher = document.createElement('div');
         teacher.className = 'teacher';
-        teacher.textContent = sel;
 
+        const textSpan = document.createElement('span');
+        textSpan.textContent = translateWord(sel);
+
+        const button = document.createElement('button');
+        button.textContent = 'Save';
+
+        button.addEventListener('click', function() {
+            console.log('salvar')
+        });
+
+        teacher.appendChild(textSpan);
+        teacher.appendChild(button);
+
+        teacher.style.position = 'absolute';
         teacher.style.left = `${event.pageX}px`;
-        teacher.style.top = `${event.pageY - 50}px`; // 30px para um pequeno offset
+        teacher.style.top = `${event.pageY - 50}px`;
 
-        // Adicionar a tooltip ao body
         document.body.appendChild(teacher);
     }
 };
