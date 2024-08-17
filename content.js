@@ -47,6 +47,18 @@ function highlightWords() {
     document.head.appendChild(style);
 }
 
+function highlightWord(wordToWrap, translate) {
+    const elements = document.querySelectorAll('h1, h2, h3, h4, p, span');
+
+    elements.forEach(element => {
+        const regex = new RegExp(`(?!<vh-t[^>]*>)\\b${wordToWrap}\\b(?!<\\/vh-t>)`, 'gi'); // Procura pela palavra não envolvida
+        if (regex.test(element.innerHTML)) {
+            element.innerHTML = element.innerHTML.replace(regex, `<vh-t translate='#t1'>${wordToWrap}</vh-t>`);
+            element.innerHTML = element.innerHTML.replace("#t1", translate)
+        }
+    });
+}
+
 function addTooltipToElements() {
     document.querySelectorAll('vh-t').forEach(element => {
         element.addEventListener('click', function(event) {
@@ -124,6 +136,25 @@ async function loadAllKeys() {
 
 loadAllKeys();
 
+async function saveTranslate(key, value) {
+    const response = await fetch(`${supabaseUrl}/rest/v1/translate`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({ word: key, translate: value })
+    })
+
+    if (response.ok) {
+        const data = await response.json()
+    } else {
+        console.error('Error saving value:', response.statusText)
+    }
+}
+
 function getAllWord() {
     var xhr = new XMLHttpRequest();
     var result = null;
@@ -184,23 +215,27 @@ document.ondblclick = function (event) {
         teacher.className = 'teacher';
 
         const textSpan = document.createElement('span');
-        textSpan.textContent = translateWord(sel);
 
-        const button = document.createElement('button');
-        button.textContent = 'Save';
+        if (sel in wordsDontknow) {
+            return true;
+        } else {
+            var translateSel = translateWord(sel);
+            textSpan.textContent = translateSel;
 
-        button.addEventListener('click', function() {
-            console.log('salvar')
-        });
+            wordsDontknow[sel] = translateSel;
+            highlightWord(sel, translateSel);
+            addTooltipToElements();
 
-        teacher.appendChild(textSpan);
-        teacher.appendChild(button);
+            saveTranslate(sel, translateSel);
 
-        teacher.style.position = 'absolute';
-        teacher.style.left = `${event.pageX}px`;
-        teacher.style.top = `${event.pageY - 50}px`;
+            teacher.appendChild(textSpan);
 
-        document.body.appendChild(teacher);
+            teacher.style.position = 'absolute';
+            teacher.style.left = `${event.pageX}px`;
+            teacher.style.top = `${event.pageY - 50}px`;
+
+            document.body.appendChild(teacher);
+        }
     }
 };
 
