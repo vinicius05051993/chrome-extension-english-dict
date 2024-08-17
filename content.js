@@ -157,7 +157,7 @@ async function saveTranslate(key, value) {
 
 function getAllWord() {
     var xhr = new XMLHttpRequest();
-    var result = null;
+    var result = {};
 
     xhr.open('GET', `${supabaseUrl}/rest/v1/translate`, false);
     xhr.setRequestHeader('apikey', supabaseKey);
