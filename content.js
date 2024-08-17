@@ -155,6 +155,30 @@ async function saveTranslate(key, value) {
     }
 }
 
+function deleteTranslate(key) {
+    const url = `${supabaseUrl}/rest/v1/translate?word=eq.${encodeURIComponent(key)}`;
+
+    fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+        }
+    })
+        .then(response => {
+            if (response.ok) {
+                console.log(`A linha com a palavra '${key}' foi deletada com sucesso.`);
+            } else {
+                console.error('Erro ao deletar a linha:', response.statusText);
+            }
+        })
+        .catch(error => {
+            console.error('Erro na requisição:', error);
+        });
+}
+
 function getAllWord() {
     var xhr = new XMLHttpRequest();
     var result = {};
@@ -201,6 +225,22 @@ function translateWord(wordToTranslate) {
     }
 }
 
+function removeWordFromVHT(wordToUnwrap) {
+    const elements = document.querySelectorAll('vh-t');
+
+    elements.forEach(element => {
+        const regex = new RegExp(`\\b${wordToUnwrap}\\b`, 'g');
+
+        if (regex.test(element.textContent)) {
+            const parent = element.parentNode;
+            const textNode = document.createTextNode(wordToUnwrap);
+
+            parent.insertBefore(textNode, element);
+            element.remove();
+        }
+    });
+}
+
 document.ondblclick = function (event) {
     var sel = (document.selection && document.selection.createRange().text) ||
         (window.getSelection && window.getSelection().toString());
@@ -217,7 +257,9 @@ document.ondblclick = function (event) {
         const textSpan = document.createElement('span');
 
         if (sel in wordsDontknow) {
-            return true;
+            deleteTranslate(sel)
+            delete wordsDontknow[sel];
+            removeWordFromVHT(sel);
         } else {
             var translateSel = translateWord(sel);
             textSpan.textContent = translateSel;
