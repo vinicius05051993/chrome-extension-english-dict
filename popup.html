@@ -1,16 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Minha Extensão</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Auth</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 10px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        button {
+            margin-top: 20px;
+        }
+        #loginForm, #registrationForm {
+            display: none;
+        }
+        #statusMessage {
+            margin-top: 10px;
+            color: red;
+        }
+    </style>
 </head>
 <body>
-<h1>Olá, Mundo!</h1>
-<button id="clickMe">Clique em mim</button>
+<h1>Supabase Auth</h1>
+
+<!-- Botões de seleção -->
+<button id="showLogin">Login</button>
+<button id="showRegister">Register</button>
+
+<!-- Formulário de Login -->
+<form id="loginForm">
+    <h2>Login</h2>
+    <label for="loginEmail">Email:</label>
+    <input type="email" id="loginEmail" name="email" required>
+
+    <label for="loginPassword">Password:</label>
+    <input type="password" id="loginPassword" name="password" required>
+
+    <button type="submit">Login</button>
+</form>
+
+<!-- Formulário de Registro -->
+<form id="registrationForm">
+    <h2>Register</h2>
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required>
+
+    <label for="registerEmail">Email:</label>
+    <input type="email" id="registerEmail" name="email" required>
+
+    <label for="registerPassword">Password:</label>
+    <input type="password" id="registerPassword" name="password" required>
+
+    <button type="submit">Register</button>
+</form>
+
+<div id="statusMessage"></div>
+
 <script src="popup.js"></script>
 </body>
 </html>
-<style>
-    html {
-        color: ;
-    }
-</style>
