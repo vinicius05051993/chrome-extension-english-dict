@@ -53,30 +53,34 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     const password = document.getElementById('loginPassword').value;
 
     try {
-        const { data, error } = await fetch(supabaseUrl + '/auth/v1/token?grant_type=password', {
+        const response = await fetch(supabaseUrl + '/auth/v1/token?grant_type=password', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'apikey': supabaseKey,
-                'Authorization': `Bearer ` + supabaseKey
+                'Authorization': `Bearer ${supabaseKey}`
             },
             body: JSON.stringify({
                 email: email,
                 password: password
             })
-        }).then(response => response.json());
+        });
 
-        if (error) {
-            document.getElementById('statusMessage').innerText = `Login Error: ${error.message}`;
+        const data = await response.json();
+
+        if (data.error) {
+            document.getElementById('statusMessage').innerText = `Login Error: ${data.error.message}`;
         } else {
-            document.getElementById('statusMessage').innerText = 'Login successful!';
+            chrome.runtime.sendMessage({ action: 'SaveToken', token: data['access_token'] });
+            chrome.runtime.sendMessage({ action: 'SaveUserId', id: data['user']['id'] });
+
+            document.getElementById('statusMessage').innerText = 'Sucesso!';
         }
     } catch (error) {
         document.getElementById('statusMessage').innerText = `Unexpected error: ${error.message}`;
     }
 });
 
-// Função para lidar com o registro
 document.getElementById('registrationForm').addEventListener('submit', async function(event) {
     event.preventDefault();
 
@@ -85,12 +89,12 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
     const password = document.getElementById('registerPassword').value;
 
     try {
-        const { data, error } = await fetch(supabaseUrl + '/rest/v1/users', {
+        const response = await fetch(supabaseUrl + '/rest/v1/users', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'apikey': supabaseKey,
-                'Authorization': `Bearer ` + supabaseKey,
+                'Authorization': `Bearer ${supabaseKey}`,
                 'Prefer': 'return=representation'
             },
             body: JSON.stringify({
@@ -98,12 +102,18 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
                 email: email,
                 password: password
             })
-        }).then(response => response.json());
+        });
 
-        if (error) {
-            document.getElementById('statusMessage').innerText = `Registration Error: ${error.message}`;
+        const data = await response.json();
+
+        if (data.error) {
+            document.getElementById('statusMessage').innerText = `Registration Error: ${data.error.message}`;
         } else {
-            document.getElementById('statusMessage').innerText = 'User registered successfully!';
+            if (data.access_token) {
+                localStorage.setItem('supabase_user_data', data.user);
+                localStorage.setItem('supabase_access_token', data.access_token);
+            }
+            document.getElementById('statusMessage').innerText = data.toJSON();
         }
     } catch (error) {
         document.getElementById('statusMessage').innerText = `Unexpected error: ${error.message}`;

@@ -92,6 +92,9 @@ var apiTranslateKey;
 var supabaseUrl;
 var supabaseKey;
 
+var supabaseLoggedToken;
+var supabaseLoggedUserId;
+
 function getSecureKey(keyName) {
     return new Promise((resolve, reject) => {
         chrome.runtime.sendMessage({ action: keyName }, (response) => {
@@ -105,6 +108,12 @@ function getSecureKey(keyName) {
                         break;
                     case 'supabaseKey':
                         supabaseKey = response.key;
+                        break;
+                    case 'supabaseLoggedToken':
+                        supabaseLoggedToken = response.key;
+                        break;
+                    case 'supabaseLoggedUserId':
+                        supabaseLoggedUserId = response.key;
                         break;
                     default:
                         console.warn(`Unknown keyName: ${keyName}`);
