@@ -53,8 +53,7 @@ function highlightWord(wordToWrap, translate) {
     elements.forEach(element => {
         const regex = new RegExp(`(?!<vh-t[^>]*>)\\b${wordToWrap}\\b(?!<\\/vh-t>)`, 'gi'); // Procura pela palavra não envolvida
         if (regex.test(element.innerHTML)) {
-            element.innerHTML = element.innerHTML.replace(regex, `<vh-t translate='#t1'>${wordToWrap}</vh-t>`);
-            element.innerHTML = element.innerHTML.replace("#t1", translate)
+            element.innerHTML = element.innerHTML.replace(regex, `<vh-t translate=` + translate +`>${wordToWrap}</vh-t>`);
         }
     });
 }
