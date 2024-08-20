@@ -1,3 +1,6 @@
+const supabaseUrl = "https://wgkakdbjxdqfdshqodtw.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indna2FrZGJqeGRxZmRzaHFvZHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM2NjQ0NzcsImV4cCI6MjAzOTI0MDQ3N30.yAEn_IPXMxK4holhx9osY8nwHPVQIuF8bPZ7_asV0KM";
+
 document.getElementById('showLogin').addEventListener('click', function() {
     document.getElementById('loginForm').style.display = 'block';
     document.getElementById('registrationForm').style.display = 'none';
@@ -8,44 +11,6 @@ document.getElementById('showRegister').addEventListener('click', function() {
     document.getElementById('registrationForm').style.display = 'block';
 });
 
-var supabaseUrl;
-var supabaseKey;
-
-function getSecureKey(keyName) {
-    return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({ action: keyName }, (response) => {
-            if (response && response.key) {
-                switch (keyName) {
-                    case 'supabaseUrl':
-                        supabaseUrl = response.key;
-                        break;
-                    case 'supabaseKey':
-                        supabaseKey = response.key;
-                        break;
-                    default:
-                        console.warn(`Unknown keyName: ${keyName}`);
-                        break;
-                }
-                resolve(response.key);
-            } else {
-                reject('Não foi possível obter o secretKey.');
-            }
-        });
-    });
-}
-
-async function loadAllKeys() {
-    try {
-        await getSecureKey('supabaseUrl');
-        await getSecureKey('supabaseKey');
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-loadAllKeys();
-
-// Função para lidar com o login
 document.getElementById('loginForm').addEventListener('submit', async function(event) {
     event.preventDefault();
 
@@ -71,10 +36,10 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         if (data.error) {
             document.getElementById('statusMessage').innerText = `Login Error: ${data.error.message}`;
         } else {
-            chrome.runtime.sendMessage({ action: 'SaveToken', token: data['access_token'] });
-            chrome.runtime.sendMessage({ action: 'SaveUserId', id: data['user']['id'] });
+            sendLoggedData('saveLoggedToken', data['access_token'])
+            sendLoggedData('saveLoggedUserId', data['user']['id'])
 
-            document.getElementById('statusMessage').innerText = 'Sucesso!';
+            document.getElementById('statusMessage').innerText = 'Login feito com sucesso!';
         }
     } catch (error) {
         document.getElementById('statusMessage').innerText = `Unexpected error: ${error.message}`;
@@ -109,13 +74,19 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
         if (data.error) {
             document.getElementById('statusMessage').innerText = `Registration Error: ${data.error.message}`;
         } else {
-            if (data.access_token) {
-                localStorage.setItem('supabase_user_data', data.user);
-                localStorage.setItem('supabase_access_token', data.access_token);
-            }
-            document.getElementById('statusMessage').innerText = data.toJSON();
+            sendLoggedData('saveLoggedToken', data['access_token'])
+            sendLoggedData('saveLoggedUserId', data['user']['id'])
+
+            document.getElementById('statusMessage').innerText = "Registrado com sucesso!";
         }
     } catch (error) {
         document.getElementById('statusMessage').innerText = `Unexpected error: ${error.message}`;
     }
 });
+
+function sendLoggedData(keyName, value)
+{
+    chrome.runtime.sendMessage({ action: keyName, value: value }, (response) => {
+
+    });
+}

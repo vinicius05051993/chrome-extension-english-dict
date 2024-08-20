@@ -30,5 +30,8 @@
       "js": ["content.js"],
       "css": ["styles.css"]
     }
+  ],
+  "host_permissions": [
+    "https://wgkakdbjxdqfdshqodtw.supabase.co/*"
   ]
 }

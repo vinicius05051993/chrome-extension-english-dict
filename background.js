@@ -2,11 +2,8 @@
 const secretTranslateKey = "AIzaSyD5eo942YXElyvkwo9GNe5jxpBDBPf-ftc";
 const supabaseUrl = "https://wgkakdbjxdqfdshqodtw.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indna2FrZGJqeGRxZmRzaHFvZHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM2NjQ0NzcsImV4cCI6MjAzOTI0MDQ3N30.yAEn_IPXMxK4holhx9osY8nwHPVQIuF8bPZ7_asV0KM";
-
-var supabaseLoggedToken = '';
-var supabaseLoggedUserId = '';
-
-// Função para lidar com mensagens do content.js
+let supabaseLoggedToken = false;
+let supabaseLoggedUserId = false;
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'getSecretTranslateKey') {
         sendResponse({ key: secretTranslateKey });
@@ -18,10 +15,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ key: supabaseLoggedToken });
     } else if (request.action === 'supabaseLoggedUserId') {
         sendResponse({ key: supabaseLoggedUserId });
-    } else if (request.action === 'saveToken') {
-        supabaseLoggedToken = request.token;
-    } else if (request.action === 'SaveUserId') {
-        supabaseLoggedUserId = request.id;
+    }else if (request.action === 'saveLoggedToken') {
+        supabaseLoggedToken = request.value;
+    } else if (request.action === 'saveLoggedUserId') {
+        supabaseLoggedUserId = request.value;
     } else {
         sendResponse({ error: 'Ação desconhecida' });
     }

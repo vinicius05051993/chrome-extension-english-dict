@@ -92,13 +92,10 @@ var apiTranslateKey;
 var supabaseUrl;
 var supabaseKey;
 
-var supabaseLoggedToken;
-var supabaseLoggedUserId;
-
 function getSecureKey(keyName) {
     return new Promise((resolve, reject) => {
         chrome.runtime.sendMessage({ action: keyName }, (response) => {
-            if (response && response.key) {
+            if (response) {
                 switch (keyName) {
                     case 'getSecretTranslateKey':
                         apiTranslateKey = response.key;
@@ -138,78 +135,105 @@ async function loadAllKeys() {
         highlightWords();
         addTooltipToElements();
     } catch (error) {
-        console.error(error);
+        console.log('sem variavel de usuario')
     }
 }
 
 loadAllKeys();
 
-async function saveTranslate(key, value) {
-    const response = await fetch(`${supabaseUrl}/rest/v1/translate`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Prefer': 'return=representation'
-        },
-        body: JSON.stringify({ word: key, translate: value })
-    })
+var supabaseLoggedToken = false;
+var supabaseLoggedUserId = false;
 
-    if (response.ok) {
-        const data = await response.json()
+async function saveTranslate(key, value) {
+    await getSecureKey('supabaseLoggedToken');
+    await getSecureKey('supabaseLoggedUserId');
+
+    console.log('save translate: ' + supabaseLoggedUserId)
+
+    if (supabaseLoggedToken && supabaseLoggedUserId) {
+        const response = await fetch(`${supabaseUrl}/rest/v1/translate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Prefer': 'return=representation'
+            },
+            body: JSON.stringify({ word: key, translate: value })
+        })
+
+        if (response.ok) {
+            const data = await response.json()
+        } else {
+            console.error('Error saving value:', response.statusText)
+        }
     } else {
-        console.error('Error saving value:', response.statusText)
+        console.log('Faça login');
     }
 }
 
-function deleteTranslate(key) {
-    const url = `${supabaseUrl}/rest/v1/translate?word=eq.${encodeURIComponent(key)}`;
+async function deleteTranslate(key) {
+    await getSecureKey('supabaseLoggedToken');
+    await getSecureKey('supabaseLoggedUserId');
 
-    fetch(url, {
-        method: 'DELETE',
-        headers: {
-            'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-        }
-    })
-        .then(response => {
-            if (response.ok) {
-                console.log(`A linha com a palavra '${key}' foi deletada com sucesso.`);
-            } else {
-                console.error('Erro ao deletar a linha:', response.statusText);
+    if (supabaseLoggedToken && supabaseLoggedUserId) {
+        const url = `${supabaseUrl}/rest/v1/translate?word=eq.${encodeURIComponent(key)}`;
+
+        fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=minimal'
             }
         })
-        .catch(error => {
-            console.error('Erro na requisição:', error);
-        });
+            .then(response => {
+                if (response.ok) {
+                    console.log(`A linha com a palavra '${key}' foi deletada com sucesso.`);
+                } else {
+                    console.error('Erro ao deletar a linha:', response.statusText);
+                }
+            })
+            .catch(error => {
+                console.error('Erro na requisição:', error);
+            });
+    } else {
+        console.log('Faça login');
+    }
 }
 
-function getAllWord() {
-    var xhr = new XMLHttpRequest();
-    var result = {};
+async function getAllWord() {
+    await getSecureKey('supabaseLoggedToken');
+    await getSecureKey('supabaseLoggedUserId');
 
-    xhr.open('GET', `${supabaseUrl}/rest/v1/translate`, false);
-    xhr.setRequestHeader('apikey', supabaseKey);
-    xhr.setRequestHeader('Authorization', `Bearer ${supabaseKey}`);
+    if (supabaseLoggedToken && supabaseLoggedUserId) {
+        var xhr = new XMLHttpRequest();
+        var result = {};
 
-    xhr.send();
+        xhr.open('GET', `${supabaseUrl}/rest/v1/translate`, false);
+        xhr.setRequestHeader('apikey', supabaseKey);
+        xhr.setRequestHeader('Authorization', `Bearer ${supabaseKey}`);
 
-    if (xhr.status === 200) {
-        var data = JSON.parse(xhr.responseText);
-        if (data.length > 0) {
-            result = {};
-            for (const row in data) {
-                result[data[row]['word']] = data[row]['translate']
+        xhr.send();
+
+        if (xhr.status === 200) {
+            var data = JSON.parse(xhr.responseText);
+            if (data.length > 0) {
+                result = {};
+                for (const row in data) {
+                    result[data[row]['word']] = data[row]['translate']
+                }
             }
+        } else {
+            console.error('Error retrieving value:', xhr.statusText);
         }
-    } else {
-        console.error('Error retrieving value:', xhr.statusText);
-    }
 
-    return result;
+        return result;
+    } else {
+        console.log('Faça login');
+        return {};
+    }
 }
 
 let wordsDontknow = {};
@@ -226,7 +250,7 @@ function translateWord(wordToTranslate) {
         const response = JSON.parse(xhr.responseText);
         const translatedText = response.data.translations[0].translatedText;
         console.log(`Translated Text: ${translatedText}`);
-        return translatedText; // Retorna a tradução
+        return translatedText;
     } else {
         console.error('Error:', xhr.statusText);
         return null;
