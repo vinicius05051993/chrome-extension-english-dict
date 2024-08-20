@@ -130,7 +130,7 @@ async function loadAllKeys() {
         await getSecureKey('supabaseUrl');
         await getSecureKey('supabaseKey');
 
-        wordsDontknow = getAllWord();
+        wordsDontknow = await getAllWord();
 
         highlightWords();
         addTooltipToElements();
@@ -148,24 +148,59 @@ async function saveTranslate(key, value) {
     await getSecureKey('supabaseLoggedToken');
     await getSecureKey('supabaseLoggedUserId');
 
-    console.log('save translate: ' + supabaseLoggedUserId)
-
     if (supabaseLoggedToken && supabaseLoggedUserId) {
-        const response = await fetch(`${supabaseUrl}/rest/v1/translate`, {
-            method: 'POST',
+        let response = await fetch(`${supabaseUrl}/rest/v1/translate?select=id&word=eq.${key}`, {
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'apikey': supabaseKey,
-                'Authorization': `Bearer ${supabaseKey}`,
-                'Prefer': 'return=representation'
-            },
-            body: JSON.stringify({ word: key, translate: value })
-        })
+                'Authorization': `Bearer ${supabaseLoggedToken}`
+            }
+        });
+
+        let translateId;
 
         if (response.ok) {
-            const data = await response.json()
-        } else {
-            console.error('Error saving value:', response.statusText)
+            const data = await response.json();
+
+            if (data.length > 0) {
+                translateId = data[0].id;
+            } else {
+                response = await fetch(`${supabaseUrl}/rest/v1/translate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': supabaseKey,
+                        'Authorization': `Bearer ${supabaseLoggedToken}`,
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify({ word: key, translate: value, type: 'en-pt' })
+                });
+
+                if (response.ok) {
+                    const insertData = await response.json();
+                    translateId = insertData[0].id; // Obter o ID da nova palavra inserida
+                } else {
+                    console.error('Erro ao inserir a palavra na tabela translate:', response.statusText);
+                    return;
+                }
+            }
+
+            response = await fetch(`${supabaseUrl}/rest/v1/user_relation`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': supabaseKey,
+                    'Authorization': `Bearer ${supabaseLoggedToken}`,
+                    'Prefer': 'return=representation'
+                },
+                body: JSON.stringify({ user_id: supabaseLoggedUserId, translate_id: translateId })
+            });
+
+            if (response.ok) {
+                console.log('Relação entre usuário e palavra inserida com sucesso!');
+            } else {
+                console.error('Erro ao inserir a relação na tabela user_relation:', response.statusText);
+            }
         }
     } else {
         console.log('Faça login');
@@ -183,7 +218,7 @@ async function deleteTranslate(key) {
             method: 'DELETE',
             headers: {
                 'apikey': supabaseKey,
-                'Authorization': `Bearer ${supabaseKey}`,
+                'Authorization': `Bearer ${supabaseLoggedToken}`,
                 'Content-Type': 'application/json',
                 'Prefer': 'return=minimal'
             }
@@ -211,9 +246,9 @@ async function getAllWord() {
         var xhr = new XMLHttpRequest();
         var result = {};
 
-        xhr.open('GET', `${supabaseUrl}/rest/v1/translate`, false);
+        xhr.open('GET', `${supabaseUrl}/rest/v1/translate?select=*,user_relation!inner(user_id)&user_relation.user_id=eq.${supabaseLoggedUserId}`, false);
         xhr.setRequestHeader('apikey', supabaseKey);
-        xhr.setRequestHeader('Authorization', `Bearer ${supabaseKey}`);
+        xhr.setRequestHeader('Authorization', `Bearer ${supabaseLoggedToken}`);
 
         xhr.send();
 
