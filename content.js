@@ -197,6 +197,7 @@ async function saveTranslate(key, value) {
             });
 
             if (response.ok) {
+                wordsIdRelation[key] = translateId;
                 console.log('Relação entre usuário e palavra inserida com sucesso!');
             } else {
                 console.error('Erro ao inserir a relação na tabela user_relation:', response.statusText);
@@ -211,10 +212,11 @@ async function deleteTranslate(key) {
     await getSecureKey('supabaseLoggedToken');
     await getSecureKey('supabaseLoggedUserId');
 
+    let response;
     if (supabaseLoggedToken && supabaseLoggedUserId) {
-        const url = `${supabaseUrl}/rest/v1/translate?word=eq.${encodeURIComponent(key)}`;
-
-        fetch(url, {
+        let translateId = wordsIdRelation[key];
+        const deleteUrl = `${supabaseUrl}/rest/v1/user_relation?user_id=eq.${supabaseLoggedUserId}&translate_id=eq.${translateId}`;
+        response = await fetch(deleteUrl, {
             method: 'DELETE',
             headers: {
                 'apikey': supabaseKey,
@@ -222,17 +224,7 @@ async function deleteTranslate(key) {
                 'Content-Type': 'application/json',
                 'Prefer': 'return=minimal'
             }
-        })
-            .then(response => {
-                if (response.ok) {
-                    console.log(`A linha com a palavra '${key}' foi deletada com sucesso.`);
-                } else {
-                    console.error('Erro ao deletar a linha:', response.statusText);
-                }
-            })
-            .catch(error => {
-                console.error('Erro na requisição:', error);
-            });
+        });
     } else {
         console.log('Faça login');
     }
@@ -258,6 +250,7 @@ async function getAllWord() {
                 result = {};
                 for (const row in data) {
                     result[data[row]['word']] = data[row]['translate']
+                    wordsIdRelation[data[row]['word']] = [data[row]['id']]
                 }
             }
         } else {
@@ -272,6 +265,7 @@ async function getAllWord() {
 }
 
 let wordsDontknow = {};
+let wordsIdRelation = {};
 
 function translateWord(wordToTranslate) {
     const targetLanguage = 'pt';
@@ -318,16 +312,16 @@ document.ondblclick = function (event) {
             existingTeacher.remove();
         }
 
-        const teacher = document.createElement('div');
-        teacher.className = 'teacher';
-
-        const textSpan = document.createElement('span');
-
         if (sel in wordsDontknow) {
             deleteTranslate(sel)
             delete wordsDontknow[sel];
             removeWordFromVHT(sel);
         } else {
+            const teacher = document.createElement('div');
+            teacher.className = 'teacher';
+
+            const textSpan = document.createElement('span');
+
             var translateSel = translateWord(sel);
             textSpan.textContent = translateSel;
 
