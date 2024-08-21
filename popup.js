@@ -1,16 +1,6 @@
 const supabaseUrl = "https://wgkakdbjxdqfdshqodtw.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indna2FrZGJqeGRxZmRzaHFvZHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM2NjQ0NzcsImV4cCI6MjAzOTI0MDQ3N30.yAEn_IPXMxK4holhx9osY8nwHPVQIuF8bPZ7_asV0KM";
 
-document.getElementById('showLogin').addEventListener('click', function() {
-    document.getElementById('loginForm').style.display = 'block';
-    document.getElementById('registrationForm').style.display = 'none';
-});
-
-document.getElementById('showRegister').addEventListener('click', function() {
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('registrationForm').style.display = 'block';
-});
-
 document.getElementById('loginForm').addEventListener('submit', async function(event) {
     event.preventDefault();
 
@@ -34,22 +24,24 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         const data = await response.json();
 
         if (data.error) {
-            document.getElementById('statusMessage').innerText = `Login Error: ${data.error.message}`;
+            document.getElementById('errorMessage').innerText = `Login Error: ${data.error.message}`;
+            document.getElementById('successMessage').innerText = '';
         } else {
             sendLoggedData('saveLoggedToken', data['access_token'])
             sendLoggedData('saveLoggedUserId', data['user']['id'])
 
-            document.getElementById('statusMessage').innerText = 'Login feito com sucesso!';
+            document.getElementById('successMessage').innerText = 'Login feito com sucesso!';
+            document.getElementById('errorMessage').innerText = '';
         }
     } catch (error) {
-        document.getElementById('statusMessage').innerText = `Unexpected error: ${error.message}`;
+        document.getElementById('errorMessage').innerText = `Unexpected error: ${error.message}`;
+        document.getElementById('successMessage').innerText = '';
     }
 });
 
 document.getElementById('registrationForm').addEventListener('submit', async function(event) {
     event.preventDefault();
 
-    const name = document.getElementById('name').value;
     const email = document.getElementById('registerEmail').value;
     const password = document.getElementById('registerPassword').value;
 
@@ -63,7 +55,6 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
                 'Prefer': 'return=representation'
             },
             body: JSON.stringify({
-                name: name,
                 email: email,
                 password: password
             })
@@ -72,15 +63,18 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
         const data = await response.json();
 
         if (data.error) {
-            document.getElementById('statusMessage').innerText = `Registration Error: ${data.error.message}`;
+            document.getElementById('errorMessage').innerText = `Registration Error: ${data.error.message}`;
+            document.getElementById('successMessage').innerText = '';
         } else {
             sendLoggedData('saveLoggedToken', data['access_token'])
             sendLoggedData('saveLoggedUserId', data['user']['id'])
 
-            document.getElementById('statusMessage').innerText = "Registrado com sucesso!";
+            document.getElementById('successMessage').innerText = "Registrado com sucesso!";
+            document.getElementById('errorMessage').innerText = '';
         }
     } catch (error) {
-        document.getElementById('statusMessage').innerText = `Unexpected error: ${error.message}`;
+        document.getElementById('errorMessage').innerText = `Unexpected error: ${error.message}`;
+        document.getElementById('successMessage').innerText = '';
     }
 });
 
@@ -90,3 +84,32 @@ function sendLoggedData(keyName, value)
 
     });
 }
+
+function openPage(pageName, elmnt, color) {
+    // Hide all elements with class="tabcontent" by default */
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    // Remove the background color of all tablinks/buttons
+    tablinks = document.getElementsByClassName("tablink");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].style.backgroundColor = "";
+    }
+
+    document.getElementById(pageName).style.display = "block";
+    elmnt.style.backgroundColor = color;
+}
+
+const tablinks = document.querySelectorAll('.tablink');
+tablinks.forEach(tablink => {
+    tablink.addEventListener('click', function() {
+        console.log(this.getAttribute('color'))
+        openPage(this.innerText, this, this.getAttribute('color'))
+    });
+});
+
+// Get the element with id="defaultOpen" and click on it
+document.getElementById("defaultOpen").click();
