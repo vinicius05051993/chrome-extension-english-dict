@@ -26,9 +26,11 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         if (data.error) {
             document.getElementById('errorMessage').innerText = `Login Error: ${data.error.message}`;
             document.getElementById('successMessage').innerText = '';
+            document.getElementById('status').innerText = 'OFFLINE';
         } else {
             sendLoggedData('saveLoggedToken', data['access_token'])
             sendLoggedData('saveLoggedUserId', data['user']['id'])
+            document.getElementById('status').innerText = 'ONLINE';
 
             document.getElementById('successMessage').innerText = 'Login feito com sucesso!';
             document.getElementById('errorMessage').innerText = '';
@@ -36,6 +38,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     } catch (error) {
         document.getElementById('errorMessage').innerText = `Unexpected error: ${error.message}`;
         document.getElementById('successMessage').innerText = '';
+        document.getElementById('status').innerText = 'OFFLINE';
     }
 });
 
@@ -65,16 +68,19 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
         if (data.error) {
             document.getElementById('errorMessage').innerText = `Registration Error: ${data.error.message}`;
             document.getElementById('successMessage').innerText = '';
+            document.getElementById('status').innerText = 'OFFLINE';
         } else {
             sendLoggedData('saveLoggedToken', data['access_token'])
             sendLoggedData('saveLoggedUserId', data['user']['id'])
 
             document.getElementById('successMessage').innerText = "Registrado com sucesso!";
             document.getElementById('errorMessage').innerText = '';
+            document.getElementById('status').innerText = 'ONLINE';
         }
     } catch (error) {
         document.getElementById('errorMessage').innerText = `Unexpected error: ${error.message}`;
         document.getElementById('successMessage').innerText = '';
+        document.getElementById('status').innerText = 'OFFLINE';
     }
 });
 
@@ -113,3 +119,15 @@ tablinks.forEach(tablink => {
 
 // Get the element with id="defaultOpen" and click on it
 document.getElementById("defaultOpen").click();
+
+function isLogged() {
+    chrome.runtime.sendMessage({ action: 'supabaseLoggedUserId' }, (response) => {
+        if (response && response.key) {
+            document.getElementById('status').innerText = 'ONLINE';
+        } else {
+            document.getElementById('status').innerText = 'OFFLINE';
+        }
+    });
+}
+
+isLogged()
