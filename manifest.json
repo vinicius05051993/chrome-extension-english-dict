@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Minha Primeira Extensão",
+  "name": "Smart Vocabulary by Meyfel",
   "version": "1.0",
-  "description": "Uma extensão simples para o Google Chrome.",
+  "description": "Traduza, marque e aprenda novas palavras enquanto navega.",
   "permissions": [
     "storage",
     "activeTab",
