@@ -178,7 +178,7 @@ async function saveTranslate(key, value) {
 
                 if (response.ok) {
                     const insertData = await response.json();
-                    translateId = insertData[0].id; // Obter o ID da nova palavra inserida
+                    translateId = insertData[0].id;
                 } else {
                     console.error('Erro ao inserir a palavra na tabela translate:', response.statusText);
                     return;
