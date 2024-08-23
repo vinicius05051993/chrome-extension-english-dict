@@ -37,14 +37,6 @@ function highlightWords() {
 
     const elementsToProcess = document.querySelectorAll('h1, h2, h3, h4, p, span');
     elementsToProcess.forEach(element => processElement(element));
-
-    const style = document.createElement('style');
-    style.textContent = `
-        [translate] {
-            color: #3a99bf;
-        }
-    `;
-    document.head.appendChild(style);
 }
 
 function highlightWord(wordToWrap, translate) {
@@ -285,6 +277,54 @@ function translateWord(wordToTranslate) {
         return null;
     }
 }
+async function createFloatingDiv() {
+    await getSecureKey('supabaseLoggedToken');
+    await getSecureKey('supabaseLoggedUserId');
+    if (supabaseLoggedToken && supabaseLoggedUserId) {
+        const floatingDiv = document.createElement('div');
+        floatingDiv.className = 'floatingDiv';
+        floatingDiv.innerText = 'Minhas Palavras';
+        document.body.appendChild(floatingDiv);
+
+        // Criar a modal
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modalContent';
+        modalContent.innerHTML = '<ul id="all-words-content"></ul>';
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'closeBtn';
+        closeBtn.innerText = 'Fechar';
+        modalContent.appendChild(closeBtn);
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+
+        floatingDiv.addEventListener('click', function () {
+            modal.style.display = 'flex';
+            document.getElementById('all-words-content').innerText = 'palavras aqui';
+
+            const list = document.getElementById('all-words-content');
+            list.innerHTML = '';
+            for (const key in wordsDontknow) {
+                if (wordsDontknow.hasOwnProperty(key)) {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = '<vh-t translate=' + wordsDontknow[key] + '>' + key + '</vh-t>';
+                    listItem.className = 'li-word-translate'
+                    list.appendChild(listItem);
+                }
+            }
+
+            addTooltipToElements();
+        });
+
+        // Ação ao clicar no botão de fechar
+        closeBtn.addEventListener('click', function () {
+            modal.style.display = 'none';
+        });
+    }
+}
+
+createFloatingDiv();
 
 function removeWordFromVHT(wordToUnwrap) {
     const elements = document.querySelectorAll('vh-t');

@@ -13,6 +13,10 @@
     padding: 10px;
 }
 
+[translate] {
+    color: #3a99bf;
+}
+
 .teacher {
     position: absolute;
     background-color: #d8d17e;
@@ -25,4 +29,58 @@
     transition: opacity 0.3s ease;
     opacity: 0.9;
     padding: 10px;
+}
+
+.li-word-translate {
+    margin-bottom: 5px;
+}
+
+.floatingDiv {
+    width: 100px;
+    height: 100px;
+    background-color: rgba(216, 209, 126, 0.49); /* Semitransparente */
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: black;
+    font-size: 14px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+}
+
+/* Estilo da modal */
+.modal {
+    display: none; /* Escondido por padrão */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Fundo escuro */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modalContent {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+}
+
+.closeBtn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #d8d17e;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
 }
