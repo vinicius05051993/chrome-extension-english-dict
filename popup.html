@@ -24,6 +24,8 @@
 
         body, html {
             margin: 0;
+            min-width: 250px;
+            min-height: 300px;
         }
 
         .tablink {
@@ -54,31 +56,36 @@
 
 <div id="status"></div>
 
-<button color="#86ace4" class="tablink" id="defaultOpen">Login</button>
-<button color="#c0efc0" class="tablink">Cadastro</button>
+<div id="offline">
+    <button color="#86ace4" class="tablink" id="defaultOpen">Login</button>
+    <button color="#c0efc0" class="tablink">Cadastro</button>
 
-<div id="Login" class="tabcontent">
-    <form id="loginForm">
-        <label for="loginEmail">Email:</label>
-        <input type="email" id="loginEmail" name="email" required>
+    <div id="Login" class="tabcontent">
+        <form id="loginForm">
+            <label for="loginEmail">Email:</label>
+            <input type="email" id="loginEmail" name="email" required>
 
-        <label for="loginPassword">Password:</label>
-        <input type="password" id="loginPassword" name="password" required>
+            <label for="loginPassword">Password:</label>
+            <input type="password" id="loginPassword" name="password" required>
 
-        <button type="submit">Login</button>
-    </form>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+    <div id="Cadastro" class="tabcontent">
+        <form id="registrationForm">
+            <label for="registerEmail">Email:</label>
+            <input type="email" id="registerEmail" name="email" required>
+
+            <label for="registerPassword">Password:</label>
+            <input type="password" id="registerPassword" name="password" required>
+
+            <button type="submit">Cadastrar</button>
+        </form>
+    </div>
 </div>
-
-<div id="Cadastro" class="tabcontent">
-    <form id="registrationForm">
-        <label for="registerEmail">Email:</label>
-        <input type="email" id="registerEmail" name="email" required>
-
-        <label for="registerPassword">Password:</label>
-        <input type="password" id="registerPassword" name="password" required>
-
-        <button type="submit">Cadastrar</button>
-    </form>
+<div id="online">
+//mostrar lista de palavras
 </div>
 
 

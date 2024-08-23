@@ -27,10 +27,14 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
             document.getElementById('errorMessage').innerText = `Login Error: ${data.error.message}`;
             document.getElementById('successMessage').innerText = '';
             document.getElementById('status').innerText = 'OFFLINE';
+            document.getElementById('online').style.display = 'none';
+            document.getElementById('offline').style.display = 'block';
         } else {
             sendLoggedData('saveLoggedToken', data['access_token'])
             sendLoggedData('saveLoggedUserId', data['user']['id'])
             document.getElementById('status').innerText = 'ONLINE';
+            document.getElementById('online').style.display = 'block';
+            document.getElementById('offline').style.display = 'none';
 
             document.getElementById('successMessage').innerText = 'Login feito com sucesso!';
             document.getElementById('errorMessage').innerText = '';
@@ -39,6 +43,8 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         document.getElementById('errorMessage').innerText = `Unexpected error: ${error.message}`;
         document.getElementById('successMessage').innerText = '';
         document.getElementById('status').innerText = 'OFFLINE';
+        document.getElementById('online').style.display = 'none';
+        document.getElementById('offline').style.display = 'block';
     }
 });
 
@@ -69,6 +75,8 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
             document.getElementById('errorMessage').innerText = `Registration Error: ${data.error.message}`;
             document.getElementById('successMessage').innerText = '';
             document.getElementById('status').innerText = 'OFFLINE';
+            document.getElementById('online').style.display = 'none';
+            document.getElementById('offline').style.display = 'block';
         } else {
             sendLoggedData('saveLoggedToken', data['access_token'])
             sendLoggedData('saveLoggedUserId', data['user']['id'])
@@ -76,11 +84,15 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
             document.getElementById('successMessage').innerText = "Registrado com sucesso!";
             document.getElementById('errorMessage').innerText = '';
             document.getElementById('status').innerText = 'ONLINE';
+            document.getElementById('online').style.display = 'block';
+            document.getElementById('offline').style.display = 'none';
         }
     } catch (error) {
         document.getElementById('errorMessage').innerText = `Unexpected error: ${error.message}`;
         document.getElementById('successMessage').innerText = '';
         document.getElementById('status').innerText = 'OFFLINE';
+        document.getElementById('online').style.display = 'none';
+        document.getElementById('offline').style.display = 'block';
     }
 });
 
@@ -124,8 +136,12 @@ function isLogged() {
     chrome.runtime.sendMessage({ action: 'supabaseLoggedUserId' }, (response) => {
         if (response && response.key) {
             document.getElementById('status').innerText = 'ONLINE';
+            document.getElementById('online').style.display = 'block';
+            document.getElementById('offline').style.display = 'none';
         } else {
             document.getElementById('status').innerText = 'OFFLINE';
+            document.getElementById('online').style.display = 'none';
+            document.getElementById('offline').style.display = 'block';
         }
     });
 }
