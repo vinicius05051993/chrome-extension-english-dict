@@ -45,7 +45,7 @@ function highlightWord(wordToWrap, translate) {
     elements.forEach(element => {
         const regex = new RegExp(`(?!<vh-t[^>]*>)\\b${wordToWrap}\\b(?!<\\/vh-t>)`, 'gi'); // Procura pela palavra não envolvida
         if (regex.test(element.innerHTML)) {
-            element.innerHTML = element.innerHTML.replace(regex, `<vh-t translate=` + translate +`>${wordToWrap}</vh-t>`);
+            element.innerHTML = element.innerHTML.replace(regex, `<vh-t translate="` + translate +`">${wordToWrap}</vh-t>`);
         }
     });
 }
@@ -344,7 +344,7 @@ async function createFloatingDiv() {
             for (const key in wordsDontknow) {
                 if (wordsDontknow.hasOwnProperty(key)) {
                     const listItem = document.createElement('div');
-                    listItem.innerHTML = '<vh-t translate=' + wordsDontknow[key] + '>' + key + '</vh-t>';
+                    listItem.innerHTML = '<vh-t translate="' + wordsDontknow[key] + '">' + key + '</vh-t>';
                     listItem.className = 'li-word-translate'
                     modalContentVHT.appendChild(listItem);
                 }
