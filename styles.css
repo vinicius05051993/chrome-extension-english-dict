@@ -54,7 +54,7 @@
 }
 
 /* Estilo da modal */
-.modal {
+.modalVHT {
     display: none; /* Escondido por padrão */
     position: fixed;
     top: 0;
@@ -67,7 +67,7 @@
     z-index: 1000;
 }
 
-.modalContent {
+.modalContentVHT {
     background-color: white;
     padding: 20px;
     border-radius: 8px;

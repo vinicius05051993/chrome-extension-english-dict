@@ -327,41 +327,37 @@ async function createFloatingDiv() {
         floatingDiv.className = 'floatingDiv';
         floatingDiv.innerText = 'Minhas Palavras';
         document.body.appendChild(floatingDiv);
-
-        // Criar a modal
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        const modalContent = document.createElement('div');
-        modalContent.className = 'modalContent';
-        modalContent.innerHTML = '<ul id="all-words-content"></ul>';
+        const modalVHT = document.createElement('div');
+        modalVHT.className = 'modalVHT';
+        const modalContentVHT = document.createElement('div');
+        modalContentVHT.className = 'modalContentVHT';
         const closeBtn = document.createElement('button');
         closeBtn.className = 'closeBtn';
         closeBtn.innerText = 'Fechar';
-        modalContent.appendChild(closeBtn);
-        modal.appendChild(modalContent);
-        document.body.appendChild(modal);
+        modalVHT.appendChild(modalContentVHT);
+        document.body.appendChild(modalVHT);
 
         floatingDiv.addEventListener('click', function () {
-            modal.style.display = 'flex';
-            document.getElementById('all-words-content').innerText = 'palavras aqui';
+            modalVHT.style.display = 'flex';
 
-            const list = document.getElementById('all-words-content');
-            list.innerHTML = '';
+            modalContentVHT.innerHTML = '';
             for (const key in wordsDontknow) {
                 if (wordsDontknow.hasOwnProperty(key)) {
-                    const listItem = document.createElement('li');
+                    const listItem = document.createElement('div');
                     listItem.innerHTML = '<vh-t translate=' + wordsDontknow[key] + '>' + key + '</vh-t>';
                     listItem.className = 'li-word-translate'
-                    list.appendChild(listItem);
+                    modalContentVHT.appendChild(listItem);
                 }
             }
+
+            modalContentVHT.appendChild(closeBtn);
 
             addTooltipToElements();
         });
 
         // Ação ao clicar no botão de fechar
         closeBtn.addEventListener('click', function () {
-            modal.style.display = 'none';
+            modalVHT.style.display = 'none';
         });
     }
 }
