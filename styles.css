@@ -68,6 +68,8 @@
 }
 
 .modalContentVHT {
+    overflow: auto;
+    height: 400px;
     background-color: white;
     padding: 20px;
     border-radius: 8px;
@@ -76,7 +78,9 @@
 }
 
 .closeBtn {
-    margin-top: 20px;
+    position: relative;
+    top: 85%;
+    margin-top: unset;
     padding: 10px 20px;
     background-color: #d8d17e;
     color: black;

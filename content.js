@@ -334,11 +334,12 @@ async function createFloatingDiv() {
         const closeBtn = document.createElement('button');
         closeBtn.className = 'closeBtn';
         closeBtn.innerText = 'Fechar';
+        modalVHT.appendChild(closeBtn);
         modalVHT.appendChild(modalContentVHT);
         document.body.appendChild(modalVHT);
 
         floatingDiv.addEventListener('click', function () {
-            modalVHT.style.display = 'flex';
+            modalVHT.style.display = 'grid';
 
             modalContentVHT.innerHTML = '';
             for (const key in wordsDontknow) {
@@ -349,8 +350,6 @@ async function createFloatingDiv() {
                     modalContentVHT.appendChild(listItem);
                 }
             }
-
-            modalContentVHT.appendChild(closeBtn);
 
             addTooltipToElements();
         });
