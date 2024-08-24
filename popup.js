@@ -32,11 +32,13 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         } else {
             sendLoggedData('saveLoggedToken', data['access_token'])
             sendLoggedData('saveLoggedUserId', data['user']['id'])
+            sendLoggedData('saveRefreshToken', data['refresh_token'])
+
             document.getElementById('status').innerText = 'ONLINE';
             document.getElementById('online').style.display = 'block';
             document.getElementById('offline').style.display = 'none';
 
-            document.getElementById('successMessage').innerText = 'Login feito com sucesso!';
+            document.getElementById('successMessage').innerText = 'Login feito com sucesso! atualize a página para começar a usar.';
             document.getElementById('errorMessage').innerText = '';
         }
     } catch (error) {
@@ -80,6 +82,7 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
         } else {
             sendLoggedData('saveLoggedToken', data['access_token'])
             sendLoggedData('saveLoggedUserId', data['user']['id'])
+            sendLoggedData('saveRefreshToken', data['refresh_token'])
 
             document.getElementById('successMessage').innerText = "Registrado com sucesso!";
             document.getElementById('errorMessage').innerText = '';

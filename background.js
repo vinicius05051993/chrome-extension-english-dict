@@ -25,6 +25,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
         return true;
 
+    } else if (request.action === 'supabaseRefreshToken') {
+        chrome.storage.local.get(['supabaseRefreshToken'], (result) => {
+            sendResponse({ key: result.supabaseRefreshToken });
+        });
+        return true;
+
     } else if (request.action === 'saveLoggedToken') {
         chrome.storage.local.set({ supabaseLoggedToken: request.value }, () => {
             sendResponse({ key: 'supabaseLoggedToken', value: request.value });
@@ -34,6 +40,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else if (request.action === 'saveLoggedUserId') {
         chrome.storage.local.set({ supabaseLoggedUserId: request.value }, () => {
             sendResponse({ key: 'supabaseLoggedUserId', value: request.value });
+        });
+        return true;
+
+    } else if (request.action === 'saveRefreshToken') {
+        chrome.storage.local.set({ supabaseRefreshToken: request.value }, () => {
+            sendResponse({ key: 'supabaseRefreshToken', value: request.value });
         });
         return true;
 

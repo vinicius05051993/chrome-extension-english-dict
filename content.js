@@ -104,6 +104,9 @@ function getSecureKey(keyName) {
                     case 'supabaseLoggedUserId':
                         supabaseLoggedUserId = response.key;
                         break;
+                    case 'supabaseRefreshToken':
+                        supabaseRefreshToken = response.key;
+                        break;
                     default:
                         console.warn(`Unknown keyName: ${keyName}`);
                         break;
@@ -122,7 +125,7 @@ async function loadAllKeys() {
         await getSecureKey('supabaseUrl');
         await getSecureKey('supabaseKey');
 
-        wordsDontknow = await getAllWord();
+        wordsDontknow = await getAllWord(true);
 
         highlightWords();
         addTooltipToElements();
@@ -135,6 +138,7 @@ loadAllKeys();
 
 var supabaseLoggedToken = false;
 var supabaseLoggedUserId = false;
+var supabaseRefreshToken = false;
 
 async function saveTranslate(key, value) {
     await getSecureKey('supabaseLoggedToken');
@@ -200,6 +204,13 @@ async function saveTranslate(key, value) {
     }
 }
 
+function sendLoggedData(keyName, value)
+{
+    chrome.runtime.sendMessage({ action: keyName, value: value }, (response) => {
+
+    });
+}
+
 async function deleteTranslate(key) {
     await getSecureKey('supabaseLoggedToken');
     await getSecureKey('supabaseLoggedUserId');
@@ -222,7 +233,32 @@ async function deleteTranslate(key) {
     }
 }
 
-async function getAllWord() {
+async function refreshAccessToken(refreshToken) {
+    const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=refresh_token`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`
+        },
+        body: JSON.stringify({
+            refresh_token: refreshToken
+        })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+        supabaseLoggedToken = data.access_token;
+        sendLoggedData('saveLoggedToken', data['access_token'])
+        supabaseRefreshToken = data.refresh_token;
+        sendLoggedData('saveRefreshToken', data['refresh_token'])
+    } else {
+        console.error('Erro ao renovar o token:', data);
+    }
+}
+
+async function getAllWord(allowRecursive) {
     await getSecureKey('supabaseLoggedToken');
     await getSecureKey('supabaseLoggedUserId');
 
@@ -244,6 +280,12 @@ async function getAllWord() {
                     result[data[row]['word']] = data[row]['translate']
                     wordsIdRelation[data[row]['word']] = [data[row]['id']]
                 }
+            }
+        } else if (xhr.status === 401) {
+            await getSecureKey('supabaseRefreshToken');
+            await refreshAccessToken(supabaseRefreshToken);
+            if (allowRecursive) {
+                result = await getAllWord(false)
             }
         } else {
             console.error('Error retrieving value:', xhr.statusText);
