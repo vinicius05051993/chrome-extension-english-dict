@@ -343,18 +343,15 @@ async function createFloatingDiv() {
 
             modalContentVHT.innerHTML = '';
             for (const key in wordsDontknow) {
-                if (wordsDontknow.hasOwnProperty(key)) {
-                    const listItem = document.createElement('p');
-                    listItem.innerHTML = '<vh-t translate="' + wordsDontknow[key] + '">' + key + '</vh-t>';
-                    listItem.className = 'li-word-translate'
-                    modalContentVHT.appendChild(listItem);
-                }
+                const listItem = document.createElement('p');
+                listItem.innerHTML = '<vh-t translate="' + wordsDontknow[key] + '">' + key + '</vh-t>';
+                listItem.className = 'li-word-translate'
+                modalContentVHT.appendChild(listItem);
             }
 
             addTooltipToElements();
         });
 
-        // Ação ao clicar no botão de fechar
         closeBtn.addEventListener('click', function () {
             modalVHT.style.display = 'none';
         });
