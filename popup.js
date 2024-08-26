@@ -57,13 +57,12 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
     const password = document.getElementById('registerPassword').value;
 
     try {
-        const response = await fetch(supabaseUrl + '/rest/v1/users', {
+        const response = await fetch(`${supabaseUrl}/auth/v1/signup`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'apikey': supabaseKey,
-                'Authorization': `Bearer ${supabaseKey}`,
-                'Prefer': 'return=representation'
+                'Authorization': `Bearer ${supabaseKey}`
             },
             body: JSON.stringify({
                 email: email,
@@ -73,24 +72,27 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
 
         const data = await response.json();
 
-        if (data.error) {
-            document.getElementById('errorMessage').innerText = `Registration Error: ${data.error.message}`;
-            document.getElementById('successMessage').innerText = '';
-            document.getElementById('status').innerText = 'OFFLINE';
-            document.getElementById('online').style.display = 'none';
-            document.getElementById('offline').style.display = 'block';
-        } else {
-            sendLoggedData('saveLoggedToken', data['access_token'])
-            sendLoggedData('saveLoggedUserId', data['user']['id'])
-            sendLoggedData('saveRefreshToken', data['refresh_token'])
-
-            document.getElementById('successMessage').innerText = "Registrado com sucesso!";
+        if (response.ok) {
+            document.getElementById('successMessage').innerText = JSON.stringify(data);
             document.getElementById('errorMessage').innerText = '';
             document.getElementById('status').innerText = 'ONLINE';
             document.getElementById('online').style.display = 'block';
             document.getElementById('offline').style.display = 'none';
+
+            // Salvar tokens, se necessário
+            sendLoggedData('saveLoggedToken', data.access_token);
+            sendLoggedData('saveLoggedUserId', 1);
+            sendLoggedData('saveRefreshToken', 1);
+        } else {
+            // Erro no registro
+            document.getElementById('errorMessage').innerText = `Registration Error: ${data.msg}`;
+            document.getElementById('successMessage').innerText = '';
+            document.getElementById('status').innerText = 'OFFLINE';
+            document.getElementById('online').style.display = 'none';
+            document.getElementById('offline').style.display = 'block';
         }
     } catch (error) {
+        // Erro inesperado
         document.getElementById('errorMessage').innerText = `Unexpected error: ${error.message}`;
         document.getElementById('successMessage').innerText = '';
         document.getElementById('status').innerText = 'OFFLINE';
