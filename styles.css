@@ -63,7 +63,6 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5); /* Fundo escuro */
     justify-content: center;
-    align-items: center;
     z-index: 1000;
 }
 
@@ -77,9 +76,15 @@
     text-align: center;
 }
 
-.closeBtn {
+.containerCloseBtn {
     position: relative;
-    top: 85%;
+}
+
+.closeBtn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: 1000;
     margin-top: unset;
     padding: 10px 20px;
     background-color: #d8d17e;

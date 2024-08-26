@@ -331,10 +331,16 @@ async function createFloatingDiv() {
         modalVHT.className = 'modalVHT';
         const modalContentVHT = document.createElement('div');
         modalContentVHT.className = 'modalContentVHT';
+
+        const containerCloseBtn = document.createElement('div');
+        containerCloseBtn.className = 'containerCloseBtn'
         const closeBtn = document.createElement('button');
         closeBtn.className = 'closeBtn';
         closeBtn.innerText = 'Fechar';
-        modalVHT.appendChild(closeBtn);
+        containerCloseBtn.appendChild(closeBtn);
+
+
+        modalVHT.appendChild(containerCloseBtn);
         modalVHT.appendChild(modalContentVHT);
         document.body.appendChild(modalVHT);
 
@@ -345,7 +351,7 @@ async function createFloatingDiv() {
             for (const key in wordsDontknow) {
                 const listItem = document.createElement('p');
                 listItem.innerHTML = '<vh-t translate="' + wordsDontknow[key] + '">' + key + '</vh-t>';
-                listItem.className = 'li-word-translate'
+                listItem.className = 'li-word-translate';
                 modalContentVHT.appendChild(listItem);
             }
 
@@ -357,6 +363,7 @@ async function createFloatingDiv() {
         });
     }
 }
+
 
 createFloatingDiv();
 
