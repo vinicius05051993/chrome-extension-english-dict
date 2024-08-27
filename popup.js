@@ -79,16 +79,7 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
             const data = await response.json();
 
             if (response.ok) {
-                if (response['aud'] === 'authenticated') {
-                    await makeLogin(email, password);
-                } else {
-                    document.getElementById('errorMessage').innerText = '';
-                    document.getElementById('successMessage').innerText = 'Confirme seu e-mail para começar a usar';
-
-                    document.getElementById('status').innerText = 'OFFLINE';
-                    document.getElementById('online').style.display = 'none';
-                    document.getElementById('offline').style.display = 'block';
-                }
+                await makeLogin(email, password);
             } else {
                 document.getElementById('errorMessage').innerText = `Registration Error: ${data.msg}`;
                 document.getElementById('successMessage').innerText = '';
