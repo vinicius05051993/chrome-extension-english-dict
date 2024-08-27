@@ -1,12 +1,7 @@
 const supabaseUrl = "https://wgkakdbjxdqfdshqodtw.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indna2FrZGJqeGRxZmRzaHFvZHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM2NjQ0NzcsImV4cCI6MjAzOTI0MDQ3N30.yAEn_IPXMxK4holhx9osY8nwHPVQIuF8bPZ7_asV0KM";
 
-document.getElementById('loginForm').addEventListener('submit', async function(event) {
-    event.preventDefault();
-
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-
+async function makeLogin(email, password) {
     try {
         const response = await fetch(supabaseUrl + '/auth/v1/token?grant_type=password', {
             method: 'POST',
@@ -48,6 +43,15 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         document.getElementById('online').style.display = 'none';
         document.getElementById('offline').style.display = 'block';
     }
+}
+
+document.getElementById('loginForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    await makeLogin(email, password);
 });
 
 document.getElementById('registrationForm').addEventListener('submit', async function(event) {
@@ -73,18 +77,17 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
         const data = await response.json();
 
         if (response.ok) {
-            document.getElementById('successMessage').innerText = JSON.stringify(data);
-            document.getElementById('errorMessage').innerText = '';
-            document.getElementById('status').innerText = 'ONLINE';
-            document.getElementById('online').style.display = 'block';
-            document.getElementById('offline').style.display = 'none';
+            if (response['aud'] === 'authenticated') {
+                await makeLogin(email, password);
+            } else {
+                document.getElementById('errorMessage').innerText = '';
+                document.getElementById('successMessage').innerText = 'Confirme seu e-mail para começar a usar';
 
-            // Salvar tokens, se necessário
-            sendLoggedData('saveLoggedToken', data.access_token);
-            sendLoggedData('saveLoggedUserId', 1);
-            sendLoggedData('saveRefreshToken', 1);
+                document.getElementById('status').innerText = 'OFFLINE';
+                document.getElementById('online').style.display = 'none';
+                document.getElementById('offline').style.display = 'block';
+            }
         } else {
-            // Erro no registro
             document.getElementById('errorMessage').innerText = `Registration Error: ${data.msg}`;
             document.getElementById('successMessage').innerText = '';
             document.getElementById('status').innerText = 'OFFLINE';
@@ -92,7 +95,6 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
             document.getElementById('offline').style.display = 'block';
         }
     } catch (error) {
-        // Erro inesperado
         document.getElementById('errorMessage').innerText = `Unexpected error: ${error.message}`;
         document.getElementById('successMessage').innerText = '';
         document.getElementById('status').innerText = 'OFFLINE';
