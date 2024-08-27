@@ -59,43 +59,52 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
 
     const email = document.getElementById('registerEmail').value;
     const password = document.getElementById('registerPassword').value;
+    const confirm_password = document.getElementById('confirmRegisterPassword').value;
 
-    try {
-        const response = await fetch(`${supabaseUrl}/auth/v1/signup`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'apikey': supabaseKey,
-                'Authorization': `Bearer ${supabaseKey}`
-            },
-            body: JSON.stringify({
-                email: email,
-                password: password
-            })
-        });
+    if (password === confirm_password) {
+        try {
+            const response = await fetch(`${supabaseUrl}/auth/v1/signup`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': supabaseKey,
+                    'Authorization': `Bearer ${supabaseKey}`
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password
+                })
+            });
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (response.ok) {
-            if (response['aud'] === 'authenticated') {
-                await makeLogin(email, password);
+            if (response.ok) {
+                if (response['aud'] === 'authenticated') {
+                    await makeLogin(email, password);
+                } else {
+                    document.getElementById('errorMessage').innerText = '';
+                    document.getElementById('successMessage').innerText = 'Confirme seu e-mail para começar a usar';
+
+                    document.getElementById('status').innerText = 'OFFLINE';
+                    document.getElementById('online').style.display = 'none';
+                    document.getElementById('offline').style.display = 'block';
+                }
             } else {
-                document.getElementById('errorMessage').innerText = '';
-                document.getElementById('successMessage').innerText = 'Confirme seu e-mail para começar a usar';
-
+                document.getElementById('errorMessage').innerText = `Registration Error: ${data.msg}`;
+                document.getElementById('successMessage').innerText = '';
                 document.getElementById('status').innerText = 'OFFLINE';
                 document.getElementById('online').style.display = 'none';
                 document.getElementById('offline').style.display = 'block';
             }
-        } else {
-            document.getElementById('errorMessage').innerText = `Registration Error: ${data.msg}`;
+        } catch (error) {
+            document.getElementById('errorMessage').innerText = `Unexpected error: ${error.message}`;
             document.getElementById('successMessage').innerText = '';
             document.getElementById('status').innerText = 'OFFLINE';
             document.getElementById('online').style.display = 'none';
             document.getElementById('offline').style.display = 'block';
         }
-    } catch (error) {
-        document.getElementById('errorMessage').innerText = `Unexpected error: ${error.message}`;
+    } else {
+        document.getElementById('errorMessage').innerText = 'Senha deve ser a mesma nos dois campos!';
         document.getElementById('successMessage').innerText = '';
         document.getElementById('status').innerText = 'OFFLINE';
         document.getElementById('online').style.display = 'none';
