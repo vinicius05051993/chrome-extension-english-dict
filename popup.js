@@ -32,6 +32,8 @@ async function makeLogin(email, password) {
             document.getElementById('status').innerText = 'ONLINE';
             document.getElementById('online').style.display = 'block';
             document.getElementById('offline').style.display = 'none';
+            document.getElementById('Sair').style.display = 'block';
+            document.getElementById("defaultOpenLogin").click();
 
             document.getElementById('successMessage').innerText = 'Login feito com sucesso! atualize a página para começar a usar.';
             document.getElementById('errorMessage').innerText = '';
@@ -136,19 +138,20 @@ tablinks.forEach(tablink => {
     });
 });
 
-// Get the element with id="defaultOpen" and click on it
-document.getElementById("defaultOpen").click();
-
 function isLogged() {
     chrome.runtime.sendMessage({ action: 'supabaseLoggedUserId' }, (response) => {
         if (response && response.key) {
             document.getElementById('status').innerText = 'ONLINE';
             document.getElementById('online').style.display = 'block';
             document.getElementById('offline').style.display = 'none';
+
+            document.getElementById("defaultOpenLogin").click();
         } else {
             document.getElementById('status').innerText = 'OFFLINE';
             document.getElementById('online').style.display = 'none';
             document.getElementById('offline').style.display = 'block';
+
+            document.getElementById("defaultOpen").click();
         }
     });
 }

@@ -1,3 +1,14 @@
+var apiTranslateKey;
+var supabaseUrl;
+var supabaseKey;
+
+var supabaseLoggedToken = false;
+var supabaseLoggedUserId = false;
+var supabaseRefreshToken = false;
+
+let wordsDontknow = {};
+let wordsIdRelation = {};
+
 function highlightWords() {
     function needTranslate(word) {
         if (word in wordsDontknow) {
@@ -80,10 +91,6 @@ function addTooltipToElements() {
     });
 }
 
-var apiTranslateKey;
-var supabaseUrl;
-var supabaseKey;
-
 function getSecureKey(keyName) {
     return new Promise((resolve, reject) => {
         chrome.runtime.sendMessage({ action: keyName }, (response) => {
@@ -133,12 +140,6 @@ async function loadAllKeys() {
         console.log('sem variavel de usuario')
     }
 }
-
-loadAllKeys();
-
-var supabaseLoggedToken = false;
-var supabaseLoggedUserId = false;
-var supabaseRefreshToken = false;
 
 async function saveTranslate(key, value) {
     await getSecureKey('supabaseLoggedToken');
@@ -204,8 +205,7 @@ async function saveTranslate(key, value) {
     }
 }
 
-function sendLoggedData(keyName, value)
-{
+function sendLoggedData(keyName, value) {
     chrome.runtime.sendMessage({ action: keyName, value: value }, (response) => {
 
     });
@@ -298,9 +298,6 @@ async function getAllWord(allowRecursive) {
     }
 }
 
-let wordsDontknow = {};
-let wordsIdRelation = {};
-
 function translateWord(wordToTranslate) {
     const targetLanguage = 'pt';
     const url = `https://translation.googleapis.com/language/translate/v2?key=${apiTranslateKey}&q=${encodeURIComponent(wordToTranslate)}&target=${targetLanguage}`;
@@ -364,9 +361,6 @@ async function createFloatingDiv() {
     }
 }
 
-
-createFloatingDiv();
-
 function removeWordFromVHT(wordToUnwrap) {
     const elements = document.querySelectorAll('vh-t');
 
@@ -382,6 +376,9 @@ function removeWordFromVHT(wordToUnwrap) {
         }
     });
 }
+
+loadAllKeys();
+createFloatingDiv();
 
 document.ondblclick = function (event) {
     var sel = (document.selection && document.selection.createRange().text) ||
