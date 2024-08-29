@@ -1,13 +1,5 @@
 var apiTranslateKey;
-var supabaseUrl;
-var supabaseKey;
-
-var supabaseLoggedToken = false;
-var supabaseLoggedUserId = false;
-var supabaseRefreshToken = false;
-
 let wordsDontknow = {};
-let wordsIdRelation = {};
 
 function highlightWords() {
     function needTranslate(word) {
@@ -82,7 +74,6 @@ function addTooltipToElements() {
         });
     });
 
-    // Fecha a tooltip ao clicar em qualquer outro lugar da página
     document.addEventListener('click', function(event) {
         const tooltip = document.querySelector('.tooltip');
         if (tooltip && !event.target.closest('vh-t')) {
@@ -98,21 +89,19 @@ function getSecureKey(keyName) {
                 switch (keyName) {
                     case 'getSecretTranslateKey':
                         apiTranslateKey = response.key;
-                        break;
-                    case 'supabaseUrl':
-                        supabaseUrl = response.key;
-                        break;
-                    case 'supabaseKey':
-                        supabaseKey = response.key;
-                        break;
-                    case 'supabaseLoggedToken':
-                        supabaseLoggedToken = response.key;
-                        break;
-                    case 'supabaseLoggedUserId':
-                        supabaseLoggedUserId = response.key;
-                        break;
-                    case 'supabaseRefreshToken':
-                        supabaseRefreshToken = response.key;
+
+                        chrome.storage.sync.get('myWords', async function (result) {
+                            if (result.myWords) {
+                                wordsDontknow = result.myWords
+
+                                console.log("Minhas Palavras: " + JSON.stringify(wordsDontknow))
+
+                                highlightWords();
+                                addTooltipToElements();
+                            } else {
+                                wordsDontknow = {};
+                            }
+                        });
                         break;
                     default:
                         console.warn(`Unknown keyName: ${keyName}`);
@@ -126,176 +115,8 @@ function getSecureKey(keyName) {
     });
 }
 
-async function loadAllKeys() {
-    try {
-        await getSecureKey('getSecretTranslateKey');
-        await getSecureKey('supabaseUrl');
-        await getSecureKey('supabaseKey');
-
-        wordsDontknow = await getAllWord(true);
-
-        highlightWords();
-        addTooltipToElements();
-    } catch (error) {
-        console.log('sem variavel de usuario')
-    }
-}
-
-async function saveTranslate(key, value) {
-    await getSecureKey('supabaseLoggedToken');
-    await getSecureKey('supabaseLoggedUserId');
-
-    if (supabaseLoggedToken && supabaseLoggedUserId) {
-        let response = await fetch(`${supabaseUrl}/rest/v1/translate?select=id&word=eq.${key}`, {
-            method: 'GET',
-            headers: {
-                'apikey': supabaseKey,
-                'Authorization': `Bearer ${supabaseLoggedToken}`
-            }
-        });
-
-        let translateId;
-
-        if (response.ok) {
-            const data = await response.json();
-
-            if (data.length > 0) {
-                translateId = data[0].id;
-            } else {
-                response = await fetch(`${supabaseUrl}/rest/v1/translate`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': supabaseKey,
-                        'Authorization': `Bearer ${supabaseLoggedToken}`,
-                        'Prefer': 'return=representation'
-                    },
-                    body: JSON.stringify({ word: key, translate: value, type: 'en-pt' })
-                });
-
-                if (response.ok) {
-                    const insertData = await response.json();
-                    translateId = insertData[0].id;
-                } else {
-                    console.error('Erro ao inserir a palavra na tabela translate:', response.statusText);
-                    return;
-                }
-            }
-
-            response = await fetch(`${supabaseUrl}/rest/v1/user_relation`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': supabaseKey,
-                    'Authorization': `Bearer ${supabaseLoggedToken}`,
-                    'Prefer': 'return=representation'
-                },
-                body: JSON.stringify({ user_id: supabaseLoggedUserId, translate_id: translateId })
-            });
-
-            if (response.ok) {
-                wordsIdRelation[key] = translateId;
-                console.log('Relação entre usuário e palavra inserida com sucesso!');
-            } else {
-                console.error('Erro ao inserir a relação na tabela user_relation:', response.statusText);
-            }
-        }
-    } else {
-        console.log('Faça login');
-    }
-}
-
-function sendLoggedData(keyName, value) {
-    chrome.runtime.sendMessage({ action: keyName, value: value }, (response) => {
-
-    });
-}
-
-async function deleteTranslate(key) {
-    await getSecureKey('supabaseLoggedToken');
-    await getSecureKey('supabaseLoggedUserId');
-
-    let response;
-    if (supabaseLoggedToken && supabaseLoggedUserId) {
-        let translateId = wordsIdRelation[key];
-        const deleteUrl = `${supabaseUrl}/rest/v1/user_relation?user_id=eq.${supabaseLoggedUserId}&translate_id=eq.${translateId}`;
-        response = await fetch(deleteUrl, {
-            method: 'DELETE',
-            headers: {
-                'apikey': supabaseKey,
-                'Authorization': `Bearer ${supabaseLoggedToken}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=minimal'
-            }
-        });
-    } else {
-        console.log('Faça login');
-    }
-}
-
-async function refreshAccessToken(refreshToken) {
-    const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=refresh_token`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`
-        },
-        body: JSON.stringify({
-            refresh_token: refreshToken
-        })
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-        supabaseLoggedToken = data.access_token;
-        sendLoggedData('saveLoggedToken', data['access_token'])
-        supabaseRefreshToken = data.refresh_token;
-        sendLoggedData('saveRefreshToken', data['refresh_token'])
-    } else {
-        console.error('Erro ao renovar o token:', data);
-    }
-}
-
-async function getAllWord(allowRecursive) {
-    await getSecureKey('supabaseLoggedToken');
-    await getSecureKey('supabaseLoggedUserId');
-
-    if (supabaseLoggedToken && supabaseLoggedUserId) {
-        var xhr = new XMLHttpRequest();
-        var result = {};
-
-        xhr.open('GET', `${supabaseUrl}/rest/v1/translate?select=*,user_relation!inner(user_id)&user_relation.user_id=eq.${supabaseLoggedUserId}`, false);
-        xhr.setRequestHeader('apikey', supabaseKey);
-        xhr.setRequestHeader('Authorization', `Bearer ${supabaseLoggedToken}`);
-
-        xhr.send();
-
-        if (xhr.status === 200) {
-            var data = JSON.parse(xhr.responseText);
-            if (data.length > 0) {
-                result = {};
-                for (const row in data) {
-                    result[data[row]['word']] = data[row]['translate']
-                    wordsIdRelation[data[row]['word']] = [data[row]['id']]
-                }
-            }
-        } else if (xhr.status === 401) {
-            await getSecureKey('supabaseRefreshToken');
-            await refreshAccessToken(supabaseRefreshToken);
-            if (allowRecursive) {
-                result = await getAllWord(false)
-            }
-        } else {
-            console.error('Error retrieving value:', xhr.statusText);
-        }
-
-        return result;
-    } else {
-        console.log('Faça login');
-        return {};
-    }
+function init() {
+    getSecureKey('getSecretTranslateKey');
 }
 
 function translateWord(wordToTranslate) {
@@ -316,49 +137,45 @@ function translateWord(wordToTranslate) {
         return null;
     }
 }
-async function createFloatingDiv() {
-    await getSecureKey('supabaseLoggedToken');
-    await getSecureKey('supabaseLoggedUserId');
-    if (supabaseLoggedToken && supabaseLoggedUserId) {
-        const floatingDiv = document.createElement('div');
-        floatingDiv.className = 'floatingDiv';
-        floatingDiv.innerText = 'Minhas Palavras';
-        document.body.appendChild(floatingDiv);
-        const modalVHT = document.createElement('div');
-        modalVHT.className = 'modalVHT';
-        const modalContentVHT = document.createElement('div');
-        modalContentVHT.className = 'modalContentVHT';
+function createFloatingDiv() {
+    const floatingDiv = document.createElement('div');
+    floatingDiv.className = 'floatingDiv';
+    floatingDiv.innerText = 'Minhas Palavras';
+    document.body.appendChild(floatingDiv);
+    const modalVHT = document.createElement('div');
+    modalVHT.className = 'modalVHT';
+    const modalContentVHT = document.createElement('div');
+    modalContentVHT.className = 'modalContentVHT';
 
-        const containerCloseBtn = document.createElement('div');
-        containerCloseBtn.className = 'containerCloseBtn'
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'closeBtn';
-        closeBtn.innerText = 'Fechar';
-        containerCloseBtn.appendChild(closeBtn);
+    const containerCloseBtn = document.createElement('div');
+    containerCloseBtn.className = 'containerCloseBtn'
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'closeBtn';
+    closeBtn.innerText = 'Fechar';
+    containerCloseBtn.appendChild(closeBtn);
 
 
-        modalVHT.appendChild(containerCloseBtn);
-        modalVHT.appendChild(modalContentVHT);
-        document.body.appendChild(modalVHT);
+    modalVHT.appendChild(containerCloseBtn);
+    modalVHT.appendChild(modalContentVHT);
+    document.body.appendChild(modalVHT);
 
-        floatingDiv.addEventListener('click', function () {
-            modalVHT.style.display = 'grid';
+    floatingDiv.addEventListener('click', function () {
+        modalVHT.style.display = 'grid';
 
-            modalContentVHT.innerHTML = '';
-            for (const key in wordsDontknow) {
-                const listItem = document.createElement('p');
-                listItem.innerHTML = '<vh-t translate="' + wordsDontknow[key] + '">' + key + '</vh-t>';
-                listItem.className = 'li-word-translate';
-                modalContentVHT.appendChild(listItem);
-            }
+        modalContentVHT.innerHTML = '';
+        for (const key in wordsDontknow) {
+            const listItem = document.createElement('p');
+            listItem.innerHTML = '<vh-t translate="' + wordsDontknow[key] + '">' + key + '</vh-t>';
+            listItem.className = 'li-word-translate';
+            modalContentVHT.appendChild(listItem);
+        }
 
-            addTooltipToElements();
-        });
+        addTooltipToElements();
+    });
 
-        closeBtn.addEventListener('click', function () {
-            modalVHT.style.display = 'none';
-        });
-    }
+    closeBtn.addEventListener('click', function () {
+        modalVHT.style.display = 'none';
+    });
 }
 
 function removeWordFromVHT(wordToUnwrap) {
@@ -377,7 +194,7 @@ function removeWordFromVHT(wordToUnwrap) {
     });
 }
 
-loadAllKeys();
+init();
 createFloatingDiv();
 
 document.ondblclick = function (event) {
@@ -391,7 +208,6 @@ document.ondblclick = function (event) {
         }
 
         if (sel in wordsDontknow) {
-            deleteTranslate(sel)
             delete wordsDontknow[sel];
             removeWordFromVHT(sel);
         } else {
@@ -404,10 +220,10 @@ document.ondblclick = function (event) {
             textSpan.textContent = translateSel;
 
             wordsDontknow[sel] = translateSel;
+            chrome.storage.sync.set({ 'myWords': wordsDontknow }, function() {});
+
             highlightWord(sel, translateSel);
             addTooltipToElements();
-
-            saveTranslate(sel, translateSel);
 
             teacher.appendChild(textSpan);
 
