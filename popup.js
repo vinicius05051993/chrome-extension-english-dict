@@ -1,6 +1,5 @@
 const supabaseUrl = "https://wgkakdbjxdqfdshqodtw.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indna2FrZGJqeGRxZmRzaHFvZHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM2NjQ0NzcsImV4cCI6MjAzOTI0MDQ3N30.yAEn_IPXMxK4holhx9osY8nwHPVQIuF8bPZ7_asV0KM";
-let supabaseRefreshToken = false;
 
 async function makeLogin(email, password) {
     try {
@@ -57,56 +56,19 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     await makeLogin(email, password);
 });
 
-function getSecureKey(keyName) {
-    return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({ action: keyName }, (response) => {
-            if (response) {
-                switch (keyName) {
-                    case 'supabaseRefreshToken':
-                        supabaseRefreshToken = response.key;
-                        break;
-                    default:
-                        console.warn(`Unknown keyName: ${keyName}`);
-                        break;
-                }
-                resolve(response.key);
-            } else {
-                reject('Não foi possível obter o secretKey.');
-            }
-        });
-    });
-}
-
 document.getElementById('logoffForm').addEventListener('submit', async function(event) {
     event.preventDefault();
 
-    await getSecureKey('supabaseRefreshToken');
+    sendLoggedData('saveLoggedToken', false)
+    sendLoggedData('saveLoggedUserId', false)
+    sendLoggedData('saveRefreshToken', false)
 
-    if (supabaseRefreshToken) {
-        const response = await fetch(supabaseUrl + '/auth/v1/logout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'apikey': supabaseKey,
-                'Authorization': `Bearer ${supabaseRefreshToken}`
-            }
-        });
+    document.getElementById('successMessage').innerText = 'Conta deslogada com sucesso!';
+    document.getElementById('status').innerText = 'OFFLINE';
+    document.getElementById('online').style.display = 'none';
+    document.getElementById('offline').style.display = 'block';
 
-        if (response.ok) {
-            sendLoggedData('saveLoggedToken', false)
-            sendLoggedData('saveLoggedUserId', false)
-            sendLoggedData('saveRefreshToken', false)
-
-            document.getElementById('successMessage').innerText = 'Conta deslogada com sucesso!';
-            document.getElementById('status').innerText = 'OFFLINE';
-            document.getElementById('online').style.display = 'none';
-            document.getElementById('offline').style.display = 'block';
-        } else {
-            document.getElementById('errorMessage').innerText = response.statusText;
-        }
-    } else {
-        console.error('Nenhum refresh token encontrado');
-    }
+    document.getElementById("defaultOpen").click();
 });
 
 document.getElementById('registrationForm').addEventListener('submit', async function(event) {
