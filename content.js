@@ -209,6 +209,7 @@ document.ondblclick = function (event) {
 
         if (sel in wordsDontknow) {
             delete wordsDontknow[sel];
+            chrome.storage.sync.set({ 'myWords': wordsDontknow }, function() {});
             removeWordFromVHT(sel);
         } else {
             const teacher = document.createElement('div');
