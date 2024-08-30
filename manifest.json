@@ -5,7 +5,6 @@
   "description": "Traduza, marque e aprenda novas palavras enquanto navega.",
   "permissions": [
     "storage",
-    "activeTab",
     "scripting",
     "identity"
   ],
@@ -31,8 +30,5 @@
       "js": ["content.js"],
       "css": ["styles.css"]
     }
-  ],
-  "host_permissions": [
-    "https://wgkakdbjxdqfdshqodtw.supabase.co/*"
   ]
 }

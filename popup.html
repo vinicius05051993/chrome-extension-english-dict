@@ -45,12 +45,13 @@
             color: #856404;
             font-size: 14px;
             text-align: left;
+            display: none;
         }
 
         .message {
-            color: #236bae;
+            color: #198f0c;
             font-weight: 600;
-            padding: 10px;
+            padding: 5px;
         }
     </style>
 </head>
@@ -58,7 +59,7 @@
 <div class="container">
     <h1>Smart Vocabulary by Meyfel</h1>
     <div id="loginAlert" class="alert">
-        <strong>Importante:</strong> Para garantir que suas palavras sejam salvas e acessíveis em outros dispositivos, é recomendável que você esteja logado no Google Chrome. Caso contrário, elas podem não ser armazenadas permanentemente.
+        Para garantir que suas palavras sejam salvas e acessíveis em outros dispositivos, é recomendável que você esteja logado no Google Chrome. Caso contrário, elas podem não ser armazenadas permanentemente.
     </div>
     <h2>Escolha sua Lingua Nativa</h2>
     <select id="language-select">
@@ -75,13 +76,8 @@
         <option value="id">Indonésio</option>
     </select>
     <div id="info-message" class="message"></div>
+    <div id="info-second-message" class="message"></div>
 </div>
 </body>
 <script type="text/javascript" src="popup.js"></script>
-<style>
-    .alert {
-        display: none;
-    }
-</style>
-
 </html>

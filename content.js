@@ -12,7 +12,7 @@ function highlightWord(wordToWrap, translate) {
     const elements = document.querySelectorAll('h1, h2, h3, h4, p, span');
 
     elements.forEach(element => {
-        const regex = new RegExp(`(?!<vh-t[^>]*>)\\b${wordToWrap}\\b(?!<\\/vh-t>)`, 'gi'); // Procura pela palavra não envolvida
+        const regex = new RegExp(`(?!<vh-t[^>]*>)\\b${wordToWrap}\\b(?!<\\/vh-t>)`, 'gi');
         if (regex.test(element.innerHTML)) {
             element.innerHTML = element.innerHTML.replace(regex, `<vh-t translate="` + translate +`">${wordToWrap}</vh-t>`);
         }
@@ -60,8 +60,6 @@ function getSecureKey(keyName) {
                             if (result.myWords) {
                                 wordsDontknow = result.myWords
 
-                                console.log("Minhas Palavras: " + JSON.stringify(wordsDontknow))
-
                                 highlightWords();
                                 addTooltipToElements();
                             } else {
@@ -97,9 +95,7 @@ function translateWord(wordToTranslate) {
 
     if (xhr.status === 200) {
         const response = JSON.parse(xhr.responseText);
-        const translatedText = response.data.translations[0].translatedText;
-        console.log(`Translated Text: ${translatedText}`);
-        return translatedText;
+        return response.data.translations[0].translatedText;
     } else {
         console.error('Error:', xhr.statusText);
         return null;
