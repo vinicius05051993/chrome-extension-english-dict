@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" Content="default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'">
     <title>Smart Vocabulary by Meyfel</title>
     <style>
         body {
@@ -45,15 +46,42 @@
             font-size: 14px;
             text-align: left;
         }
+
+        .message {
+            color: #236bae;
+            font-weight: 600;
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>Smart Vocabulary by Meyfel</h1>
-    <div class="alert">
+    <div id="loginAlert" class="alert">
         <strong>Importante:</strong> Para garantir que suas palavras sejam salvas e acessíveis em outros dispositivos, é recomendável que você esteja logado no Google Chrome. Caso contrário, elas podem não ser armazenadas permanentemente.
     </div>
-    <p>Continue lendo! Conhecimento é o melhor investimento que existe.</p>
+    <h2>Escolha sua Lingua Nativa</h2>
+    <select id="language-select">
+        <option value="">Selecione uma linguagem...</option>
+        <option value="en">Inglês</option>
+        <option value="zh">Chinês</option>
+        <option value="hi">Hindi</option>
+        <option value="es">Espanhol</option>
+        <option value="fr">Francês</option>
+        <option value="ar">Árabe</option>
+        <option value="bn">Bengali</option>
+        <option value="ru">Russo</option>
+        <option value="pt">Português</option>
+        <option value="id">Indonésio</option>
+    </select>
+    <div id="info-message" class="message"></div>
 </div>
 </body>
+<script type="text/javascript" src="popup.js"></script>
+<style>
+    .alert {
+        display: none;
+    }
+</style>
+
 </html>
