@@ -38,7 +38,7 @@
 .floatingDiv {
     width: 100px;
     height: 100px;
-    background-color: rgba(216, 209, 126, 0.6);
+    background-color: rgb(216, 209, 126);
     position: fixed;
     bottom: 20px;
     right: 20px;

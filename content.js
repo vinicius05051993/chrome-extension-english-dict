@@ -19,6 +19,28 @@ function highlightWord(wordToWrap, translate) {
     });
 }
 
+function addTooltipToElement(mainElement) {
+    mainElement.querySelectorAll('vh-t').forEach(element => {
+        element.addEventListener('click', function(event) {
+            const existingTooltip = document.querySelector('.tooltip');
+            if (existingTooltip) {
+                existingTooltip.remove();
+            }
+
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = element.getAttribute('translate');
+
+            const rect = event.target.getBoundingClientRect();
+
+            tooltip.style.left = `${rect.left + window.scrollX}px`;
+            tooltip.style.top = `${rect.top + window.scrollY - 30}px`; // 30px para um pequeno offset
+
+            document.body.appendChild(tooltip);
+        });
+    });
+}
+
 function addTooltipToElements() {
     document.querySelectorAll('vh-t').forEach(element => {
         element.addEventListener('click', function(event) {
@@ -134,7 +156,7 @@ function createFloatingDiv() {
             modalContentVHT.appendChild(listItem);
         }
 
-        addTooltipToElements();
+        addTooltipToElement(modalContentVHT);
     });
 
     closeBtn.addEventListener('click', function () {
