@@ -1,10 +1,10 @@
-var apiTranslateKey;
+let apiTranslateKey;
 let wordsDontknow = {};
 let targetLanguage = 'pt';
 
-function highlightWords() {
+async function highlightWords() {
     for (const [wordToWrap, translate] of Object.entries(wordsDontknow)) {
-        highlightWord(wordToWrap, translate)
+        highlightWord(wordToWrap, translate);
     }
 }
 
@@ -13,8 +13,8 @@ function highlightWord(wordToWrap, translate) {
 
     elements.forEach(element => {
         const regex = new RegExp(`(?!<vh-t[^>]*>)\\b${wordToWrap}\\b(?!<\\/vh-t>)`, 'gi');
-        if (regex.test(element.innerHTML)) {
-            element.innerHTML = element.innerHTML.replace(regex, `<vh-t translate="` + translate +`">${wordToWrap}</vh-t>`);
+        if (regex.test(element.textContent)) {
+            element.innerHTML = element.innerHTML.replace(regex, `<vh-t translate="${translate}">${wordToWrap}</vh-t>`);
             addTooltipToElement(element);
         }
     });
@@ -42,7 +42,7 @@ function addTooltipToElement(mainElement) {
     });
 }
 
-function getSecureKey(keyName) {
+async function getSecureKey(keyName) {
     return new Promise((resolve, reject) => {
         chrome.runtime.sendMessage({ action: keyName }, (response) => {
             if (response) {
@@ -50,13 +50,9 @@ function getSecureKey(keyName) {
                     case 'getSecretTranslateKey':
                         apiTranslateKey = response.key;
 
-                        chrome.storage.sync.get('myWords', async function (result) {
-                            if (result.myWords) {
-                                wordsDontknow = result.myWords
-                                highlightWords();
-                            } else {
-                                wordsDontknow = {};
-                            }
+                        chrome.storage.sync.get('myWords', async function(result) {
+                            wordsDontknow = result.myWords || {};
+                            highlightWords();
                         });
                         break;
                     default:
@@ -85,54 +81,55 @@ function init() {
     });
 }
 
-function translateWord(wordToTranslate) {
+async function translateWord(wordToTranslate) {
     const url = `https://translation.googleapis.com/language/translate/v2?key=${apiTranslateKey}&q=${encodeURIComponent(wordToTranslate)}&target=${targetLanguage}`;
 
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', url, false);
-    xhr.send();
-
-    if (xhr.status === 200) {
-        const response = JSON.parse(xhr.responseText);
-        return response.data.translations[0].translatedText;
-    } else {
-        console.error('Error:', xhr.statusText);
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        return data.data.translations[0].translatedText;
+    } catch (error) {
+        console.error('Error:', error);
         return null;
     }
 }
+
 function createFloatingDiv() {
     const imgElement = document.createElement('img');
     imgElement.src = chrome.runtime.getURL('icons/img.png');
     imgElement.alt = 'My Extension Image';
-    imgElement.className = 'floatImage'
+    imgElement.className = 'floatImage';
+
     const floatingDiv = document.createElement('div');
     floatingDiv.className = 'floatingDiv';
     floatingDiv.appendChild(imgElement);
     document.body.appendChild(floatingDiv);
+
     const modalVHT = document.createElement('div');
     modalVHT.className = 'modalVHT';
+
     const modalContentVHT = document.createElement('div');
     modalContentVHT.className = 'modalContentVHT';
 
     const containerCloseBtn = document.createElement('div');
-    containerCloseBtn.className = 'containerCloseBtn'
+    containerCloseBtn.className = 'containerCloseBtn';
+
     const closeBtn = document.createElement('button');
     closeBtn.className = 'closeBtn';
     closeBtn.innerText = 'X';
     containerCloseBtn.appendChild(closeBtn);
 
-
     modalVHT.appendChild(containerCloseBtn);
     modalVHT.appendChild(modalContentVHT);
     document.body.appendChild(modalVHT);
 
-    floatingDiv.addEventListener('click', function () {
+    floatingDiv.addEventListener('click', function() {
         modalVHT.style.display = 'grid';
 
         modalContentVHT.innerHTML = '';
         for (const key in wordsDontknow) {
             const listItem = document.createElement('p');
-            listItem.innerHTML = '<vh-t translate="' + wordsDontknow[key] + '">' + key + '</vh-t>';
+            listItem.innerHTML = `<vh-t translate="${wordsDontknow[key]}">${key}</vh-t>`;
             listItem.className = 'li-word-translate';
             modalContentVHT.appendChild(listItem);
         }
@@ -140,7 +137,7 @@ function createFloatingDiv() {
         addTooltipToElement(modalContentVHT);
     });
 
-    closeBtn.addEventListener('click', function () {
+    closeBtn.addEventListener('click', function() {
         modalVHT.style.display = 'none';
     });
 }
@@ -149,9 +146,7 @@ function removeWordFromVHT(wordToUnwrap) {
     const elements = document.querySelectorAll('vh-t');
 
     elements.forEach(element => {
-        const regex = new RegExp(`\\b${wordToUnwrap}\\b`, 'g');
-
-        if (regex.test(element.textContent)) {
+        if (element.textContent === wordToUnwrap) {
             const parent = element.parentNode;
             const textNode = document.createTextNode(wordToUnwrap);
 
@@ -161,11 +156,8 @@ function removeWordFromVHT(wordToUnwrap) {
     });
 }
 
-init();
-createFloatingDiv();
-
-document.ondblclick = function (event) {
-    var sel = (document.selection && document.selection.createRange().text) ||
+document.addEventListener('dblclick', async function(event) {
+    const sel = (document.selection && document.selection.createRange().text) ||
         (window.getSelection && window.getSelection().toString());
 
     if (sel) {
@@ -183,8 +175,7 @@ document.ondblclick = function (event) {
             teacher.className = 'teacher';
 
             const textSpan = document.createElement('span');
-
-            var translateSel = translateWord(sel);
+            const translateSel = await translateWord(sel);
             textSpan.textContent = translateSel;
 
             wordsDontknow[sel] = translateSel;
@@ -201,11 +192,14 @@ document.ondblclick = function (event) {
             document.body.appendChild(teacher);
         }
     }
-};
+});
 
-document.onclick = function () {
+document.addEventListener('click', function() {
     const existingTeacher = document.querySelector('.teacher');
     if (existingTeacher) {
         existingTeacher.remove();
     }
-}
+});
+
+init();
+createFloatingDiv();
