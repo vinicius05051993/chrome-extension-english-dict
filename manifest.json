@@ -30,5 +30,11 @@
       "js": ["content.js"],
       "css": ["styles.css"]
     }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/img.png"],
+      "matches": ["<all_urls>"]
+    }
   ]
 }

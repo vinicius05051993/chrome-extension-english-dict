@@ -101,9 +101,13 @@ function translateWord(wordToTranslate) {
     }
 }
 function createFloatingDiv() {
+    const imgElement = document.createElement('img');
+    imgElement.src = chrome.runtime.getURL('icons/img.png');
+    imgElement.alt = 'My Extension Image';
+    imgElement.className = 'floatImage'
     const floatingDiv = document.createElement('div');
     floatingDiv.className = 'floatingDiv';
-    floatingDiv.innerText = '';
+    floatingDiv.appendChild(imgElement);
     document.body.appendChild(floatingDiv);
     const modalVHT = document.createElement('div');
     modalVHT.className = 'modalVHT';

@@ -36,9 +36,9 @@
 }
 
 .floatingDiv {
-    width: 100px;
-    height: 100px;
-    background-color: rgb(216, 209, 126);
+    width: 140px;
+    height: 140px;
+    background-color: rgb(122 162 203);
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -87,9 +87,14 @@
     z-index: 1000;
     margin-top: unset;
     padding: 10px 20px;
-    background-color: #d8d17e;
+    background-color: rgb(122 162 203);
     color: black;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+}
+
+.floatImage {
+    width: 120px;
+    height: 120px;
 }
