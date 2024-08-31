@@ -15,6 +15,7 @@ function highlightWord(wordToWrap, translate) {
         const regex = new RegExp(`(?!<vh-t[^>]*>)\\b${wordToWrap}\\b(?!<\\/vh-t>)`, 'gi');
         if (regex.test(element.innerHTML)) {
             element.innerHTML = element.innerHTML.replace(regex, `<vh-t translate="` + translate +`">${wordToWrap}</vh-t>`);
+            addTooltipToElement(element);
         }
     });
 }
@@ -34,39 +35,10 @@ function addTooltipToElement(mainElement) {
             const rect = event.target.getBoundingClientRect();
 
             tooltip.style.left = `${rect.left + window.scrollX}px`;
-            tooltip.style.top = `${rect.top + window.scrollY - 30}px`; // 30px para um pequeno offset
+            tooltip.style.top = `${rect.top + window.scrollY - 30}px`;
 
             document.body.appendChild(tooltip);
         });
-    });
-}
-
-function addTooltipToElements() {
-    document.querySelectorAll('vh-t').forEach(element => {
-        element.addEventListener('click', function(event) {
-            const existingTooltip = document.querySelector('.tooltip');
-            if (existingTooltip) {
-                existingTooltip.remove();
-            }
-
-            const tooltip = document.createElement('div');
-            tooltip.className = 'tooltip';
-            tooltip.textContent = element.getAttribute('translate');
-
-            const rect = event.target.getBoundingClientRect();
-
-            tooltip.style.left = `${rect.left + window.scrollX}px`;
-            tooltip.style.top = `${rect.top + window.scrollY - 30}px`; // 30px para um pequeno offset
-
-            document.body.appendChild(tooltip);
-        });
-    });
-
-    document.addEventListener('click', function(event) {
-        const tooltip = document.querySelector('.tooltip');
-        if (tooltip && !event.target.closest('vh-t')) {
-            tooltip.remove();
-        }
     });
 }
 
@@ -81,9 +53,7 @@ function getSecureKey(keyName) {
                         chrome.storage.sync.get('myWords', async function (result) {
                             if (result.myWords) {
                                 wordsDontknow = result.myWords
-
                                 highlightWords();
-                                addTooltipToElements();
                             } else {
                                 wordsDontknow = {};
                             }
@@ -106,6 +76,13 @@ function init() {
         targetLanguage = data.targetLanguage || 'pt';
     });
     getSecureKey('getSecretTranslateKey');
+
+    document.addEventListener('click', function(event) {
+        const tooltip = document.querySelector('.tooltip');
+        if (tooltip && !event.target.closest('vh-t')) {
+            tooltip.remove();
+        }
+    });
 }
 
 function translateWord(wordToTranslate) {
@@ -210,7 +187,6 @@ document.ondblclick = function (event) {
             chrome.storage.sync.set({ 'myWords': wordsDontknow }, function() {});
 
             highlightWord(sel, translateSel);
-            addTooltipToElements();
 
             teacher.appendChild(textSpan);
 
