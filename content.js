@@ -103,7 +103,7 @@ function translateWord(wordToTranslate) {
 function createFloatingDiv() {
     const floatingDiv = document.createElement('div');
     floatingDiv.className = 'floatingDiv';
-    floatingDiv.innerText = 'Minhas Palavras';
+    floatingDiv.innerText = '';
     document.body.appendChild(floatingDiv);
     const modalVHT = document.createElement('div');
     modalVHT.className = 'modalVHT';
@@ -114,7 +114,7 @@ function createFloatingDiv() {
     containerCloseBtn.className = 'containerCloseBtn'
     const closeBtn = document.createElement('button');
     closeBtn.className = 'closeBtn';
-    closeBtn.innerText = 'Fechar';
+    closeBtn.innerText = 'X';
     containerCloseBtn.appendChild(closeBtn);
 
 
