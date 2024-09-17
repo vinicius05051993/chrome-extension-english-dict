@@ -6,7 +6,8 @@
   "permissions": [
     "storage",
     "scripting",
-    "identity"
+    "identity",
+    "identity.email"
   ],
   "background": {
     "service_worker": "background.js"
