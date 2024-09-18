@@ -113,7 +113,7 @@ async function getMyWords() {
             console.error('Erro ao buscar dados da Supabase:', error);
         }
     } else {
-        console.log('Usuário não feito login!')
+        console.log('Usuário não fez login!')
     }
 }
 
@@ -180,7 +180,7 @@ async function setMyWords() {
             console.error('Erro ao enviar dados para a Supabase:', error);
         }
     } else {
-        console.log('Usuário não feito login!')
+        console.log('Usuário não fez login!')
     }
 }
 
