@@ -82,97 +82,105 @@ async function getSecureKey(keyName) {
 }
 
 async function getMyWords() {
-    const url = `${SUPABASE_URL}/rest/v1/translations?user=eq.${encodeURIComponent(currentUser)}`;
+    if (currentUser) {
+        const url = `${SUPABASE_URL}/rest/v1/translations?user=eq.${encodeURIComponent(currentUser)}`;
 
-    try {
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'apikey': SUPABASE_API_KEY,
-                'Authorization': `Bearer ${SUPABASE_API_KEY}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=minimal'
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'apikey': SUPABASE_API_KEY,
+                    'Authorization': `Bearer ${SUPABASE_API_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=minimal'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erro ao buscar dados: ${response.statusText}`);
             }
-        });
 
-        if (!response.ok) {
-            throw new Error(`Erro ao buscar dados: ${response.statusText}`);
+            const data = await response.json();
+
+            if (data.length > 0) {
+                wordsDontknow = JSON.parse(data[0].my_words) || {};
+                await highlightWords();
+            } else {
+                console.log('Nenhum dado encontrado para este usuário.');
+                wordsDontknow = {};
+            }
+        } catch (error) {
+            console.error('Erro ao buscar dados da Supabase:', error);
         }
-
-        const data = await response.json();
-
-        if (data.length > 0) {
-            wordsDontknow = JSON.parse(data[0].my_words) || {};
-            await highlightWords();
-        } else {
-            console.log('Nenhum dado encontrado para este usuário.');
-            wordsDontknow = {};
-        }
-    } catch (error) {
-        console.error('Erro ao buscar dados da Supabase:', error);
+    } else {
+        console.log('Usuário não feito login!')
     }
 }
 
 async function setMyWords() {
-    const url = `${SUPABASE_URL}/rest/v1/translations?user=eq.${encodeURIComponent(currentUser)}`;
+    if (currentUser) {
+        const url = `${SUPABASE_URL}/rest/v1/translations?user=eq.${encodeURIComponent(currentUser)}`;
 
-    try {
-        const checkResponse = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'apikey': SUPABASE_API_KEY,
-                'Authorization': `Bearer ${SUPABASE_API_KEY}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=minimal'
-            }
-        });
-
-        const checkData = await checkResponse.json();
-
-        if (checkData.length > 0) {
-            const updateUrl = `${SUPABASE_URL}/rest/v1/translations?user=eq.${encodeURIComponent(currentUser)}`;
-
-            const updateResponse = await fetch(updateUrl, {
-                method: 'PATCH',
+        try {
+            const checkResponse = await fetch(url, {
+                method: 'GET',
                 headers: {
                     'apikey': SUPABASE_API_KEY,
                     'Authorization': `Bearer ${SUPABASE_API_KEY}`,
                     'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    my_words: wordsDontknow
-                })
+                    'Prefer': 'return=minimal'
+                }
             });
 
-            if (!updateResponse.ok) {
-                throw new Error(`Erro ao atualizar os dados: ${updateResponse.statusText}`);
+            const checkData = await checkResponse.json();
+
+            if (checkData.length > 0) {
+                const updateUrl = `${SUPABASE_URL}/rest/v1/translations?user=eq.${encodeURIComponent(currentUser)}`;
+
+                const updateResponse = await fetch(updateUrl, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_API_KEY,
+                        'Authorization': `Bearer ${SUPABASE_API_KEY}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        my_words: wordsDontknow
+                    })
+                });
+
+                if (!updateResponse.ok) {
+                    throw new Error(`Erro ao atualizar os dados: ${updateResponse.statusText}`);
+                }
+
+                console.log('Dados atualizados com sucesso');
+            } else {
+                const insertUrl = `${SUPABASE_URL}/rest/v1/translations`;
+
+                const insertResponse = await fetch(insertUrl, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_API_KEY,
+                        'Authorization': `Bearer ${SUPABASE_API_KEY}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user: currentUser,
+                        my_words: wordsDontknow
+                    })
+                });
+
+                if (!insertResponse.ok) {
+                    throw new Error(`Erro ao inserir os dados: ${insertResponse.statusText}`);
+                }
+
+                console.log('Nova linha criada com sucesso');
             }
-
-            console.log('Dados atualizados com sucesso');
-        } else {
-            const insertUrl = `${SUPABASE_URL}/rest/v1/translations`;
-
-            const insertResponse = await fetch(insertUrl, {
-                method: 'POST',
-                headers: {
-                    'apikey': SUPABASE_API_KEY,
-                    'Authorization': `Bearer ${SUPABASE_API_KEY}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    user: currentUser,
-                    my_words: wordsDontknow
-                })
-            });
-
-            if (!insertResponse.ok) {
-                throw new Error(`Erro ao inserir os dados: ${insertResponse.statusText}`);
-            }
-
-            console.log('Nova linha criada com sucesso');
+        } catch (error) {
+            console.error('Erro ao enviar dados para a Supabase:', error);
         }
-    } catch (error) {
-        console.error('Erro ao enviar dados para a Supabase:', error);
+    } else {
+        console.log('Usuário não feito login!')
     }
 }
 
