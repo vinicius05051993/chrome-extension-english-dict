@@ -1,9 +1,9 @@
-let apiTranslateKey;
-const SUPABASE_URL = 'https://wgkakdbjxdqfdshqodtw.supabase.co';
-let SUPABASE_API_KEY;
-let wordsDontknow = {};
-let targetLanguage = 'pt';
-let currentUser;
+var apiTranslateKey;
+var SUPABASE_URL = 'https://wgkakdbjxdqfdshqodtw.supabase.co';
+var SUPABASE_API_KEY;
+var wordsDontknow = {};
+var targetLanguage = 'pt';
+var currentUser;
 
 async function highlightWords() {
     for (const [wordToWrap, translate] of Object.entries(wordsDontknow)) {

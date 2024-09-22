@@ -49,7 +49,6 @@ const msgMultiLanguage = {
     }
 };
 
-
 let targetlanguage = 'pt';
 
 document.addEventListener('DOMContentLoaded', function() {
