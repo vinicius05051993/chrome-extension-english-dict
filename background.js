@@ -8,7 +8,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ key: supabaseKey });
     } else if (request.action === 'getUserEmail') {
         chrome.identity.getProfileUserInfo(async function(userInfo) {
-            sendResponse({ key: userInfo.email });
+            sendResponse({ key: userInfo.email.toLowerCase() });
         });
 
         return true;
