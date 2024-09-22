@@ -4,6 +4,7 @@
   "version": "1.0",
   "description": "Translate, markup and learn new words while browsing.",
   "permissions": [
+    "activeTab",
     "storage",
     "identity",
     "identity.email"
