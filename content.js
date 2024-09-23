@@ -282,7 +282,7 @@ document.addEventListener('dblclick', async function(event) {
         (window.getSelection && window.getSelection().toString());
     sel = sel.replace(' ', '');
 
-    if (sel !== '') {
+    if (event.ctrlKey && sel !== '') {
         const existingTeacher = document.querySelector('.teacher');
         if (existingTeacher) {
             existingTeacher.remove();
