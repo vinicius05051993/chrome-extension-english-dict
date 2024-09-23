@@ -16,10 +16,3 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ error: 'Ação desconhecida' });
     }
 });
-
-chrome.action.onClicked.addListener((tab) => {
-    chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ['content.js']
-    });
-});
