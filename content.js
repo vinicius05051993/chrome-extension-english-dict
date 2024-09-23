@@ -278,10 +278,11 @@ function removeWordFromVHT(wordToUnwrap) {
 }
 
 document.addEventListener('dblclick', async function(event) {
-    const sel = (document.selection && document.selection.createRange().text) ||
+    let sel = (document.selection && document.selection.createRange().text) ||
         (window.getSelection && window.getSelection().toString());
+    sel = sel.replace(' ', '');
 
-    if (sel) {
+    if (sel !== '') {
         const existingTeacher = document.querySelector('.teacher');
         if (existingTeacher) {
             existingTeacher.remove();
