@@ -322,5 +322,4 @@ document.addEventListener('click', function() {
     }
 });
 
-init();
-createFloatingDiv();
+init().then(r => createFloatingDiv());
