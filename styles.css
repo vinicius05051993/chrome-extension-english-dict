@@ -40,6 +40,8 @@ vh-t[translate] {
     height: 140px;
     background-color: rgb(122 162 203);
     position: fixed;
+    bottom: 20px;
+    right: 20px;
     cursor: pointer;
     display: flex;
     justify-content: center;
@@ -49,21 +51,6 @@ vh-t[translate] {
     text-align: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     z-index: 999;
-}
-
-.floatingDiv_position_1 {
-    bottom: 20px;
-    right: 20px;
-}
-
-.floatingDiv_position_2 {
-    bottom: 20px;
-    left: 20px;
-}
-
-.floatingDiv_position_3 {
-    top: 20px;
-    left: 20px;
 }
 
 /* Estilo da modal */

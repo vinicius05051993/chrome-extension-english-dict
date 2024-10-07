@@ -50,7 +50,6 @@ const msgMultiLanguage = {
 };
 
 let targetlanguage = 'pt';
-let position = 1;
 
 document.addEventListener('DOMContentLoaded', function() {
     chrome.storage.sync.get('targetLanguage', function(data) {
@@ -59,11 +58,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         document.getElementById('loginAlert').innerText = msgMultiLanguage[targetlanguage]['loginAlert'];
         document.getElementById('chooseLanguage').innerText = msgMultiLanguage[targetlanguage]['chooseLanguage'];
-    });
-
-    chrome.storage.sync.get('position', function(data) {
-        position = data.position || 1;
-        document.getElementById('position_' + position).style.backgroundColor = 'rgb(122 162 203)';
     });
 });
 
@@ -80,34 +74,4 @@ document.getElementById('language-select').addEventListener('change', function()
     document.getElementById('chooseLanguage').innerText = msgMultiLanguage[this.value]['chooseLanguage'];
     document.getElementById('info-message').innerText = msgMultiLanguage[this.value]['info-message'];
     document.getElementById('info-second-message').innerText = msgMultiLanguage[this.value]['info-second-message'];
-});
-
-document.getElementById('position_1').addEventListener('click', function() {
-    position = 1;
-    chrome.storage.sync.set({ position: position }, function() {});
-    document.getElementById('info-message').innerText = msgMultiLanguage[document.getElementById('language-select').value]['info-message'];
-
-    document.getElementById('position_1').style.backgroundColor = 'rgb(122 162 203)';
-    document.getElementById('position_2').style.backgroundColor = 'white';
-    document.getElementById('position_3').style.backgroundColor = 'white';
-});
-
-document.getElementById('position_2').addEventListener('click', function() {
-    position = 2;
-    chrome.storage.sync.set({ position: position }, function() {});
-    document.getElementById('info-message').innerText = msgMultiLanguage[document.getElementById('language-select').value]['info-message'];
-
-    document.getElementById('position_1').style.backgroundColor = 'white';
-    document.getElementById('position_2').style.backgroundColor = 'rgb(122 162 203)';
-    document.getElementById('position_3').style.backgroundColor = 'white';
-});
-
-document.getElementById('position_3').addEventListener('click', function() {
-    position = 3;
-    chrome.storage.sync.set({ position: position }, function() {});
-    document.getElementById('info-message').innerText = msgMultiLanguage[document.getElementById('language-select').value]['info-message'];
-
-    document.getElementById('position_1').style.backgroundColor = 'white';
-    document.getElementById('position_2').style.backgroundColor = 'white';
-    document.getElementById('position_3').style.backgroundColor = 'rgb(122 162 203)';
 });

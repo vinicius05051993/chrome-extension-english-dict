@@ -4,7 +4,6 @@ var SUPABASE_API_KEY;
 var wordsDontknow = {};
 var targetLanguage = 'pt';
 var currentUser;
-var position = 1;
 
 async function highlightWords() {
     for (const [wordToWrap, translate] of Object.entries(wordsDontknow)) {
@@ -186,18 +185,14 @@ async function setMyWords() {
 }
 
 async function init() {
-    chrome.storage.sync.get('position', function (data) {
-        position = data.position || 1;
-    });
-
-    chrome.storage.sync.get('targetLanguage', function (data) {
-        targetLanguage = data.targetLanguage || 'pt';
-    });
-
     await getSecureKey('getSecretTranslateKey');
     await getSecureKey('getSupabaseKey');
     await getSecureKey('getUserEmail');
     await getMyWords();
+
+    chrome.storage.sync.get('targetLanguage', function (data) {
+        targetLanguage = data.targetLanguage || 'pt';
+    });
 
     document.addEventListener('click', function (event) {
         const tooltip = document.querySelector('.tooltip');
@@ -227,7 +222,7 @@ function createFloatingDiv() {
     imgElement.className = 'floatImage';
 
     const floatingDiv = document.createElement('div');
-    floatingDiv.className = 'floatingDiv floatingDiv_position_' + position;
+    floatingDiv.className = 'floatingDiv';
     floatingDiv.appendChild(imgElement);
     document.body.appendChild(floatingDiv);
 
