@@ -4,6 +4,7 @@ var SUPABASE_API_KEY;
 var wordsDontknow = {};
 var targetLanguage = 'pt';
 var currentUser;
+var isDragging = false;
 
 async function highlightWords() {
     for (const [wordToWrap, translate] of Object.entries(wordsDontknow)) {
@@ -244,7 +245,7 @@ function createFloatingDiv() {
     modalVHT.appendChild(modalContentVHT);
     document.body.appendChild(modalVHT);
 
-    floatingDiv.addEventListener('click', function() {
+    imgElement.addEventListener('click', function() {
         modalVHT.style.display = 'grid';
 
         modalContentVHT.innerHTML = '';
@@ -256,6 +257,27 @@ function createFloatingDiv() {
         }
 
         addTooltipToElement(modalContentVHT);
+    });
+
+    floatingDiv.addEventListener('mousedown', (e) => {
+        if (e.target === imgElement) {
+            return;
+        }
+
+        isDragging = true;
+        offsetX = e.clientX - floatingDiv.offsetLeft;
+        offsetY = e.clientY - floatingDiv.offsetTop;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            floatingDiv.style.left = `${e.clientX - offsetX}px`;
+            floatingDiv.style.top = `${e.clientY - offsetY}px`;
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
     });
 
     closeBtn.addEventListener('click', function() {
