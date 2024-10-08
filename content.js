@@ -347,4 +347,4 @@ document.addEventListener('click', function() {
 
 init().then(r => createFloatingDiv());
 
-var intervalID = window.setInterval(getMyWords, 300);
+var intervalID = window.setInterval(getMyWords, 180000);
