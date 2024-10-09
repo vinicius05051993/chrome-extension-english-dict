@@ -13,7 +13,7 @@ async function highlightWords() {
 }
 
 function highlightWord(wordToWrap, translate) {
-    const elements = document.querySelectorAll('h1, h2, h3, h4, p, span');
+    const elements = document.querySelectorAll('h1, h2, h3, h4, p, span, div');
 
     elements.forEach(element => {
         const childNodes = Array.from(element.childNodes);
