@@ -133,9 +133,29 @@ async function getMyWords() {
             if (data.length > 0) {
                 let wordsDontknow = JSON.parse(data[0].my_words) || {};
                 for (const [word, translate] of Object.entries(wordsDontknow)) {
-                    const text = document.createElement('div');
-                    text.textContent = word + " - " + translate;
-                    document.getElementById('word-dont-know').appendChild(text);
+                    const textContentDiv = document.createElement('div');
+                    textContentDiv.textContent = word;
+                    textContentDiv.className = 'word-inside-dont-know';
+
+                    textContentDiv.addEventListener('click', function (event) {
+                        const existingTooltip = document.querySelector('.tooltip');
+                        if (existingTooltip) {
+                            existingTooltip.remove();
+                        }
+
+                        const tooltip = document.createElement('div');
+                        tooltip.className = 'tooltip';
+                        tooltip.textContent = translate;
+
+                        const rect = event.target.getBoundingClientRect();
+
+                        tooltip.style.left = `${rect.left + 220 + window.scrollX}px`;
+                        tooltip.style.top = `${rect.top + window.scrollY}px`;
+
+                        document.body.appendChild(tooltip);
+                    });
+
+                    document.getElementById('word-dont-know').appendChild(textContentDiv);
                 }
             } else {
                 console.log('Nenhum dado encontrado para este usuário.');
