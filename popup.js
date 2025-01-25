@@ -52,6 +52,8 @@ const msgMultiLanguage = {
 let targetlanguage = 'pt';
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('aqui')
+    init().then(r => '');
     chrome.storage.sync.get('targetLanguage', function(data) {
         targetlanguage = data.targetLanguage || 'pt';
         document.getElementById('language-select').value = targetlanguage;
@@ -75,3 +77,80 @@ document.getElementById('language-select').addEventListener('change', function()
     document.getElementById('info-message').innerText = msgMultiLanguage[this.value]['info-message'];
     document.getElementById('info-second-message').innerText = msgMultiLanguage[this.value]['info-second-message'];
 });
+
+let apiTranslateKey;
+let SUPABASE_URL = 'https://wgkakdbjxdqfdshqodtw.supabase.co';
+let SUPABASE_API_KEY;
+let currentUser;
+
+async function getSecureKey(keyName) {
+    return new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({ action: keyName }, (response) => {
+            if (response) {
+                switch (keyName) {
+                    case 'getSecretTranslateKey':
+                        apiTranslateKey = response.key;
+                        break;
+                    case 'getSupabaseKey':
+                        SUPABASE_API_KEY = response.key;
+                        break;
+                    case 'getUserEmail':
+                        currentUser = response.key;
+                        break;
+                    default:
+                        console.warn(`Unknown keyName: ${keyName}`);
+                        break;
+                }
+                resolve(response.key);
+            } else {
+                reject(`Não foi possível obter o ${keyName}.`);
+            }
+        });
+    });
+}
+
+async function getMyWords() {
+    if (currentUser) {
+        const url = `${SUPABASE_URL}/rest/v1/translations?user=eq.${encodeURIComponent(currentUser)}`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'apikey': SUPABASE_API_KEY,
+                    'Authorization': `Bearer ${SUPABASE_API_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=minimal'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erro ao buscar dados: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            if (data.length > 0) {
+                let wordsDontknow = JSON.parse(data[0].my_words) || {};
+                for (const [word, translate] of Object.entries(wordsDontknow)) {
+                    const text = document.createElement('div');
+                    text.textContent = word + " - " + translate;
+                    document.getElementById('word-dont-know').appendChild(text);
+                }
+            } else {
+                console.log('Nenhum dado encontrado para este usuário.');
+            }
+        } catch (error) {
+            console.error('Erro ao buscar dados da Supabase:', error);
+        }
+    } else {
+        console.log('Usuário não fez login!')
+    }
+}
+
+async function init() {
+    await getSecureKey('getSecretTranslateKey');
+    await getSecureKey('getSupabaseKey');
+    await getSecureKey('getUserEmail');
+    await getMyWords();
+}

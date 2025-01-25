@@ -8,8 +8,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: rgb(122 162 203);
-            color: #333;
+            background-color: rgb(204, 224, 243);
             margin: 0;
             padding: 20px;
             display: flex;
@@ -18,22 +17,18 @@
             width: 400px;
         }
         .container {
-            background-color: black;
             padding: 40px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             text-align: center;
             max-width: 500px;
             width: 100%;
         }
         h1 {
-            color: white;
             margin-bottom: 20px;
             font-size: 24px;
         }
-        h3 {
-            color: white;
-        }
+
         p {
             font-size: 16px;
             line-height: 1.5;
@@ -56,6 +51,13 @@
             font-weight: 600;
             padding: 5px;
         }
+        .word-dont-know {
+            background-color: #ffffff;
+            padding: 16px;
+            height: 250px;
+            overflow-y: scroll;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -76,6 +78,7 @@
     </select>
     <div id="info-message" class="message"></div>
     <div id="info-second-message" class="message"></div>
+    <div id="word-dont-know" class="word-dont-know"></div>
 </div>
 </body>
 <script type="text/javascript" src="popup.js"></script>

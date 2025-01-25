@@ -4,7 +4,6 @@ var SUPABASE_API_KEY;
 var wordsDontknow = {};
 var targetLanguage = 'pt';
 var currentUser;
-var isDragging = false;
 
 async function highlightWords() {
     for (const [wordToWrap, translate] of Object.entries(wordsDontknow)) {
@@ -216,75 +215,6 @@ async function translateWord(wordToTranslate) {
     }
 }
 
-function createFloatingDiv() {
-    const imgElement = document.createElement('img');
-    imgElement.src = chrome.runtime.getURL('icons/img.png');
-    imgElement.alt = 'My Extension Image';
-    imgElement.className = 'floatImage';
-
-    const floatingDiv = document.createElement('div');
-    floatingDiv.className = 'floatingDiv';
-    floatingDiv.appendChild(imgElement);
-    document.body.appendChild(floatingDiv);
-
-    const modalVHT = document.createElement('div');
-    modalVHT.className = 'modalVHT';
-
-    const modalContentVHT = document.createElement('div');
-    modalContentVHT.className = 'modalContentVHT';
-
-    const containerCloseBtn = document.createElement('div');
-    containerCloseBtn.className = 'containerCloseBtn';
-
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'closeBtn';
-    closeBtn.innerText = 'X';
-    containerCloseBtn.appendChild(closeBtn);
-
-    modalVHT.appendChild(containerCloseBtn);
-    modalVHT.appendChild(modalContentVHT);
-    document.body.appendChild(modalVHT);
-
-    imgElement.addEventListener('click', function() {
-        modalVHT.style.display = 'grid';
-
-        modalContentVHT.innerHTML = '';
-        for (const key in wordsDontknow) {
-            const listItem = document.createElement('p');
-            listItem.innerHTML = `<vh-t translate="${wordsDontknow[key]}">${key}</vh-t>`;
-            listItem.className = 'li-word-translate';
-            modalContentVHT.appendChild(listItem);
-        }
-
-        addTooltipToElement(modalContentVHT);
-    });
-
-    floatingDiv.addEventListener('mousedown', (e) => {
-        if (e.target === imgElement) {
-            return;
-        }
-
-        isDragging = true;
-        offsetX = e.clientX - floatingDiv.offsetLeft;
-        offsetY = e.clientY - floatingDiv.offsetTop;
-    });
-
-    document.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-            floatingDiv.style.left = `${e.clientX - offsetX}px`;
-            floatingDiv.style.top = `${e.clientY - offsetY}px`;
-        }
-    });
-
-    document.addEventListener('mouseup', () => {
-        isDragging = false;
-    });
-
-    closeBtn.addEventListener('click', function() {
-        modalVHT.style.display = 'none';
-    });
-}
-
 function removeWordFromVHT(wordToUnwrap) {
     const elements = document.querySelectorAll('vh-t');
 
@@ -345,6 +275,4 @@ document.addEventListener('click', function() {
     }
 });
 
-init().then(r => createFloatingDiv());
-
-var intervalID = window.setInterval(getMyWords, 180000);
+init().then(r => "");
