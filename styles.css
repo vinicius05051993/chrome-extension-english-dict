@@ -1,7 +1,7 @@
 /* styles.css */
 .tooltip {
     position: absolute;
-    background-color: #7ed8d7;
+    background-color: rgb(223 236 213);
     color: #000000;
     padding: 5px;
     border-radius: 5px;
@@ -14,12 +14,12 @@
 }
 
 vh-t[translate] {
-    color: #3a99bf;
+    color: #1c8a1c;
 }
 
 .teacher {
     position: absolute;
-    background-color: #d8d17e;
+    background-color: rgb(223 236 213);
     color: #000000;
     padding: 5px;
     border-radius: 5px;
