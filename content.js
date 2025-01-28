@@ -155,26 +155,7 @@ async function setMyWords() {
 
                 console.log('Dados atualizados com sucesso');
             } else {
-                const insertUrl = `${SUPABASE_URL}/rest/v1/translations`;
-
-                const insertResponse = await fetch(insertUrl, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': SUPABASE_API_KEY,
-                        'Authorization': `Bearer ${SUPABASE_API_KEY}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        user: currentUser,
-                        my_words: wordsDontknow
-                    })
-                });
-
-                if (!insertResponse.ok) {
-                    throw new Error(`Erro ao inserir os dados: ${insertResponse.statusText}`);
-                }
-
-                console.log('Nova linha criada com sucesso');
+                console.log('App não cadastra usuários que não existem!');
             }
         } catch (error) {
             console.error('Erro ao enviar dados para a Supabase:', error);

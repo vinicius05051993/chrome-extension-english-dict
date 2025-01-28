@@ -109,6 +109,36 @@ async function getSecureKey(keyName) {
     });
 }
 
+function fillMyWordsInScreen(words) {
+    let elementContainerWords = document.getElementById('word-dont-know');
+    elementContainerWords.innerHTML = "";
+    for (const [word, translate] of Object.entries(words)) {
+        const textContentDiv = document.createElement('div');
+        textContentDiv.textContent = word;
+        textContentDiv.className = 'word-inside-dont-know';
+
+        textContentDiv.addEventListener('click', function (event) {
+            const existingTooltip = document.querySelector('.tooltip');
+            if (existingTooltip) {
+                existingTooltip.remove();
+            }
+
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = translate;
+
+            const rect = event.target.getBoundingClientRect();
+
+            tooltip.style.left = `${rect.left + 220 + window.scrollX}px`;
+            tooltip.style.top = `${rect.top + window.scrollY}px`;
+
+            document.body.appendChild(tooltip);
+        });
+
+        elementContainerWords.appendChild(textContentDiv);
+    }
+}
+
 async function getMyWords() {
     if (currentUser) {
         const url = `${SUPABASE_URL}/rest/v1/translations?user=eq.${encodeURIComponent(currentUser)}`;
@@ -132,33 +162,7 @@ async function getMyWords() {
 
             if (data.length > 0) {
                 wordsDontknow = JSON.parse(data[0].my_words) || {};
-                let elementContainerWords = document.getElementById('word-dont-know');
-                elementContainerWords.innerHTML = "";
-                for (const [word, translate] of Object.entries(wordsDontknow)) {
-                    const textContentDiv = document.createElement('div');
-                    textContentDiv.textContent = word;
-                    textContentDiv.className = 'word-inside-dont-know';
-
-                    textContentDiv.addEventListener('click', function (event) {
-                        const existingTooltip = document.querySelector('.tooltip');
-                        if (existingTooltip) {
-                            existingTooltip.remove();
-                        }
-
-                        const tooltip = document.createElement('div');
-                        tooltip.className = 'tooltip';
-                        tooltip.textContent = translate;
-
-                        const rect = event.target.getBoundingClientRect();
-
-                        tooltip.style.left = `${rect.left + 220 + window.scrollX}px`;
-                        tooltip.style.top = `${rect.top + window.scrollY}px`;
-
-                        document.body.appendChild(tooltip);
-                    });
-
-                    elementContainerWords.appendChild(textContentDiv);
-                }
+                fillMyWordsInScreen(wordsDontknow)
             } else {
                 console.log('Nenhum dado encontrado para este usuário.');
             }
@@ -217,29 +221,11 @@ async function setMyWords() {
 
                 console.log('Dados atualizados com sucesso');
             } else {
-                const insertUrl = `${SUPABASE_URL}/rest/v1/translations`;
-
-                const insertResponse = await fetch(insertUrl, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': SUPABASE_API_KEY,
-                        'Authorization': `Bearer ${SUPABASE_API_KEY}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        user: currentUser,
-                        my_words: wordsDontknow
-                    })
-                });
-
-                if (!insertResponse.ok) {
-                    throw new Error(`Erro ao inserir os dados: ${insertResponse.statusText}`);
-                }
-
-                console.log('Nova linha criada com sucesso');
+               console.log('App não cadastra usuários que não existem!');
             }
         } catch (error) {
-            console.error('Erro ao enviar dados para a Supabase:', error);
+            console.log('Erro ao enviar dados para a Supabase');
+            console.log(error)
         }
     } else {
         console.log('Usuário não fez login!')
@@ -262,7 +248,7 @@ document.addEventListener('dblclick', async function (event) {
         }
 
         await setMyWords();
-        await getMyWords();
+        fillMyWordsInScreen(wordsDontknow)
     }
 });
 
