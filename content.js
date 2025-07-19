@@ -210,12 +210,17 @@ function removeWordFromVHT(wordToUnwrap) {
     });
 }
 
+function isPhase(str) {
+    const words = str.trim().split(/\s+/);
+    return words.length > 1;
+}
+
 document.addEventListener('dblclick', async function(event) {
     let sel = (document.selection && document.selection.createRange().text) ||
         (window.getSelection && window.getSelection().toString());
     sel = sel.replace(' ', '');
 
-    if (event.ctrlKey && sel !== '') {
+    if (event.ctrlKey && sel !== '' && !isPhase(sel)) {
         const existingTeacher = document.querySelector('.teacher');
         if (existingTeacher) {
             existingTeacher.remove();
