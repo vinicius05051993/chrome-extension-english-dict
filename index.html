@@ -48,14 +48,12 @@
 // 3. Para cada palavra, busca a fase correspondente
         const resultado = [];
         for (const uw of userWords) {
-            // Busca o nome da palavra
             const { data: wordData } = await supabase
                 .from('word')
                 .select('word')
                 .eq('id', uw.word)
                 .single();
 
-            // Busca a fase da palavra
             const { data: wordPhase } = await supabase
                 .from('word_phase')
                 .select('phase')
@@ -69,7 +67,13 @@
                     .select('phase')
                     .eq('id', wordPhase.phase)
                     .single();
-                phaseName = phaseData?.phase || null;
+                if (phaseData) {
+                    phaseName = phaseData.phase;
+                } else {
+                    console.log('Phase não encontrada para id:', wordPhase.phase);
+                }
+            } else {
+                console.log('wordPhase ou wordPhase.phase não encontrado para word:', uw.word);
             }
 
             resultado.push({
