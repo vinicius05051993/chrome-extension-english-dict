@@ -34,30 +34,51 @@
             return;
         }
 
-        // Consulta as palavras e fases relacionadas ao usuário
-        const { data, error } = await supabase
+// 2. Busca as palavras do usuário
+        const { data: userWords, error: userWordsError } = await supabase
             .from('user_word')
-            .select(`
-            word (
-                word
-            ),
-            word_phase:word_phase(
-                phase (
-                    phase
-                )
-            )
-        `)
+            .select('word')
             .eq('user', userData.id);
 
-        if (error) {
-            console.error(error);
-        } else {
-            const resultado = data.map(item => ({
-                word: item.word?.word,
-                phase: item.word_phase?.phase?.phase || null
-            }));
-            console.log(resultado);
+        if (userWordsError) {
+            console.error(userWordsError);
+            return;
         }
+
+// 3. Para cada palavra, busca a fase correspondente
+        const resultado = [];
+        for (const uw of userWords) {
+            // Busca o nome da palavra
+            const { data: wordData } = await supabase
+                .from('word')
+                .select('word')
+                .eq('id', uw.word)
+                .single();
+
+            // Busca a fase da palavra
+            const { data: wordPhase } = await supabase
+                .from('word_phase')
+                .select('phase')
+                .eq('word', uw.word)
+                .single();
+
+            let phaseName = null;
+            if (wordPhase) {
+                const { data: phaseData } = await supabase
+                    .from('phase')
+                    .select('phase')
+                    .eq('id', wordPhase.phase)
+                    .single();
+                phaseName = phaseData?.phase || null;
+            }
+
+            resultado.push({
+                word: wordData?.word || null,
+                phase: phaseName
+            });
+        }
+
+        console.log(resultado);
     });
 </script>
 
