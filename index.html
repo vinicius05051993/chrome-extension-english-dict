@@ -22,18 +22,22 @@
         const email = params.get('email');
         console.log(email);
 
-        const {data, error} = await supabase
+        const { data, error } = await supabase
             .from('user_word')
             .select(`
                 *,
-                word_phase (
-                  phrase
-                ),
                 user (
                   id,
-                  email
+                  user
+                ),
+                word_phase (
+                  phrase,
+                  word,
+                  phase (
+                    phase
+                  )
                 )
-              `)
+                `)
             .eq('user.user', email);
 
         if (error) {
