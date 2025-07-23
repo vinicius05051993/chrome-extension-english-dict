@@ -13,14 +13,15 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    const SUPABASE_URL = 'https://wgkakdbjxdqfdshqodtw.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indna2FrZGJqeGRxZmRzaHFvZHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM2NjQ0NzcsImV4cCI6MjAzOTI0MDQ3N30.yAEn_IPXMxK4holhx9osY8nwHPVQIuF8bPZ7_asV0KM';
-    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.addEventListener('DOMContentLoaded', function () {
+        const SUPABASE_URL = 'https://wgkakdbjxdqfdshqodtw.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indna2FrZGJqeGRxZmRzaHFvZHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM2NjQ0NzcsImV4cCI6MjAzOTI0MDQ3N30.yAEn_IPXMxK4holhx9osY8nwHPVQIuF8bPZ7_asV0KM';
+        const supabase = window.Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Agora pode usar supabase normalmente
-    const params = new URLSearchParams(window.location.search);
-    const email = params.get('email');
-    console.log(email);
+        const params = new URLSearchParams(window.location.search);
+        const email = params.get('email');
+        console.log(email);
+    });
 </script>
 
 </body>
