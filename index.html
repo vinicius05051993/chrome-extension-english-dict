@@ -63,7 +63,7 @@
                 .single();
 
             let phaseName = null;
-            if (wordPhase) {
+            if (wordPhase && wordPhase.phase) {
                 const { data: phaseData } = await supabase
                     .from('phase')
                     .select('phase')
