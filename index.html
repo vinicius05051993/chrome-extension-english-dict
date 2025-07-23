@@ -13,6 +13,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+    // Busca word.word e phase.phase para o usuário pelo email
     window.addEventListener('DOMContentLoaded', async function () {
         const SUPABASE_URL = 'https://wgkakdbjxdqfdshqodtw.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indna2FrZGJqeGRxZmRzaHFvZHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM2NjQ0NzcsImV4cCI6MjAzOTI0MDQ3N30.yAEn_IPXMxK4holhx9osY8nwHPVQIuF8bPZ7_asV0KM';
@@ -33,16 +34,18 @@
             return;
         }
 
-        // Join manual entre user_word.word e word_phase.word
+        // Consulta as palavras e fases relacionadas ao usuário
         const { data, error } = await supabase
             .from('user_word')
             .select(`
             word (
                 word
             ),
-            word_phase:word_phase(word, phase (
-                phase
-            ))
+            word_phase:word_phase(
+                phase (
+                    phase
+                )
+            )
         `)
             .eq('user', userData.id);
 
