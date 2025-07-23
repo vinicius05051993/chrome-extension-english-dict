@@ -15,7 +15,7 @@
 <script>
     const SUPABASE_URL = 'https://wgkakdbjxdqfdshqodtw.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indna2FrZGJqeGRxZmRzaHFvZHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM2NjQ0NzcsImV4cCI6MjAzOTI0MDQ3N30.yAEn_IPXMxK4holhx9osY8nwHPVQIuF8bPZ7_asV0KM';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // Agora pode usar supabase normalmente
     const params = new URLSearchParams(window.location.search);
