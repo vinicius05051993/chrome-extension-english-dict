@@ -33,7 +33,7 @@
             return;
         }
 
-        // Busca as palavras e fases
+        // Join manual entre user_word.word e word_phase.word
         const { data, error } = await supabase
             .from('user_word')
             .select(`
@@ -49,7 +49,6 @@
         if (error) {
             console.error(error);
         } else {
-            // Extrai os dados conforme o SQL
             const resultado = data.map(item => ({
                 word: item.word?.word,
                 phase: item.word_phase?.phase?.phase || null
