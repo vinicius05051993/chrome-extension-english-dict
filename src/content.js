@@ -1,9 +1,172 @@
 var apiTranslateKey;
 var SUPABASE_URL = 'https://wgkakdbjxdqfdshqodtw.supabase.co';
 var SUPABASE_API_KEY;
-var wordsDontknow = {};
+var wordsDontknow = new Proxy({}, {
+    set(target, prop, value) {
+        if (allowSupaBaseComunication) {
+            console.log(`Palavra adicionada: ${prop} = ${value}`);
+            sendWordToSupaBase(prop, value).then(r => console.log(`Palavra ${prop} enviada para Supabase.`));
+        }
+        target[prop] = value;
+        return true;
+    },
+    deleteProperty(target, prop) {
+        deleteWordToSupaBase(prop).then(r => console.log(`Palavra ${prop} removida do Supabase.`));
+        delete target[prop];
+        return true;
+    }
+});
 var targetLanguage = 'pt';
 var currentUser;
+var SUPABASE_CLIENT;
+var allowSupaBaseComunication = true;
+
+import { createClient } from '@supabase/supabase-js';
+
+async function init() {
+    await getSecureKey('getSecretTranslateKey');
+    await getSecureKey('getSupabaseKey');
+    await getSecureKey('getUserEmail');
+
+    SUPABASE_CLIENT = createClient(SUPABASE_URL, SUPABASE_API_KEY)
+
+    await getMyWords();
+
+    chrome.storage.sync.get('targetLanguage', function (data) {
+        targetLanguage = data.targetLanguage || 'pt';
+    });
+
+    document.addEventListener('click', function (event) {
+        const tooltip = document.querySelector('.tooltip');
+        if (tooltip && !event.target.closest('vh-t')) {
+            tooltip.remove();
+        }
+    });
+}
+
+async function getOrCreateUserId(userEmail) {
+    // Busca usuário
+    let { data: userData, error: userError } = await SUPABASE_CLIENT
+        .from('user')
+        .select('id')
+        .eq('user', userEmail)
+        .single();
+
+    if (userError || !userData) {
+        // Insere usuário se não existir
+        const { data: insertData, error: insertError } = await SUPABASE_CLIENT
+            .from('user')
+            .insert({ user: userEmail })
+            .select('id')
+            .single();
+
+        if (insertError) {
+            console.error('Erro ao inserir usuário:', insertError);
+            return null;
+        }
+        return insertData.id;
+    } else {
+        return userData.id;
+    }
+}
+
+async function getOrCreateWordId(word, translation) {
+    // Busca palavra
+    let { data: wordData, error: wordError } = await SUPABASE_CLIENT
+        .from('word')
+        .select('id')
+        .eq('word', word)
+        .single();
+
+    if (wordError || !wordData) {
+        // Insere palavra se não existir
+        const { data: insertData, error: insertError } = await SUPABASE_CLIENT
+            .from('word')
+            .insert({ word, translation })
+            .select('id')
+            .single();
+
+        if (insertError) {
+            console.error('Erro ao inserir palavra:', insertError);
+            return null;
+        }
+        return insertData.id;
+    } else {
+        return wordData.id;
+    }
+}
+
+async function deleteWordToSupaBase(prop) {
+    if (!currentUser) {
+        console.log('Usuário não fez login!');
+        return;
+    }
+
+    try {
+        const userId = await getOrCreateUserId(currentUser);
+        const wordId = await getOrCreateWordId(prop, false);
+
+        if (!userId || !wordId) return;
+
+        // Deleta a relação user_word
+        const { error } = await SUPABASE_CLIENT
+            .from('user_word')
+            .delete()
+            .eq('user', userId)
+            .eq('word', wordId);
+
+        if (error) {
+            console.error('Erro ao deletar relação em user_word:', error);
+        } else {
+            console.log('Relação deletada com sucesso.');
+        }
+    } catch (error) {
+        console.error('Erro geral:', error);
+    }
+}
+
+async function sendWordToSupaBase(prop, value) {
+    if (!currentUser) {
+        console.log('Usuário não fez login!');
+        return;
+    }
+
+    try {
+        const userId = await getOrCreateUserId(currentUser);
+        const wordId = await getOrCreateWordId(prop, value);
+
+        if (!userId || !wordId) return;
+
+        // Verifica se a relação já existe
+        const { data: relationData, error: relationError } = await SUPABASE_CLIENT
+            .from('user_word')
+            .select('id')
+            .eq('user', userId)
+            .eq('word', wordId)
+            .single();
+
+        if (relationData) {
+            console.log('Relação já existe, não será inserida novamente.');
+            return;
+        }
+
+        // Insere em user_word se não existir
+        const { data, error } = await SUPABASE_CLIENT
+            .from('user_word')
+            .insert({
+                user: userId,
+                word: wordId
+            });
+
+        if (error) {
+            console.error('Erro ao inserir em user_word:', error);
+        } else {
+            console.log('Palavra vinculada ao usuário com sucesso:', data);
+        }
+    } catch (error) {
+        console.error('Erro geral:', error);
+    }
+}
 
 async function highlightWords() {
     for (const [wordToWrap, translate] of Object.entries(wordsDontknow)) {
@@ -83,104 +246,37 @@ async function getSecureKey(keyName) {
 
 async function getMyWords() {
     if (currentUser) {
-        const url = `${SUPABASE_URL}/rest/v1/translations?user=eq.${encodeURIComponent(currentUser)}`;
-
         try {
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'apikey': SUPABASE_API_KEY,
-                    'Authorization': `Bearer ${SUPABASE_API_KEY}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal'
+            const { data, error } = await SUPABASE_CLIENT
+                .from('user')
+                .select(`
+                user_word (
+                  word (
+                    word,
+                    translation
+                  )
+                )
+              `).eq('user', currentUser)
+
+            allowSupaBaseComunication = false;
+            data.forEach(item => {
+                if (item.user_word && Array.isArray(item.user_word)) {
+                    item.user_word.forEach(uw => {
+                        if (uw.word && uw.word.word && uw.word.translation) {
+                            wordsDontknow[uw.word.word] = uw.word.translation;
+                        }
+                    });
                 }
             });
+            allowSupaBaseComunication = true;
 
-            if (!response.ok) {
-                throw new Error(`Erro ao buscar dados: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-
-            if (data.length > 0) {
-                wordsDontknow = JSON.parse(data[0].my_words) || {};
-                await highlightWords();
-            } else {
-                console.log('Nenhum dado encontrado para este usuário.');
-                wordsDontknow = {};
-            }
+            await highlightWords();
         } catch (error) {
             console.error('Erro ao buscar dados da Supabase:', error);
         }
     } else {
         console.log('Usuário não fez login!')
     }
-}
-
-async function setMyWords() {
-    if (currentUser) {
-        const url = `${SUPABASE_URL}/rest/v1/translations?user=eq.${encodeURIComponent(currentUser)}`;
-
-        try {
-            const checkResponse = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'apikey': SUPABASE_API_KEY,
-                    'Authorization': `Bearer ${SUPABASE_API_KEY}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal'
-                }
-            });
-
-            const checkData = await checkResponse.json();
-
-            if (checkData.length > 0) {
-                const updateUrl = `${SUPABASE_URL}/rest/v1/translations?user=eq.${encodeURIComponent(currentUser)}`;
-
-                const updateResponse = await fetch(updateUrl, {
-                    method: 'PATCH',
-                    headers: {
-                        'apikey': SUPABASE_API_KEY,
-                        'Authorization': `Bearer ${SUPABASE_API_KEY}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        my_words: wordsDontknow
-                    })
-                });
-
-                if (!updateResponse.ok) {
-                    throw new Error(`Erro ao atualizar os dados: ${updateResponse.statusText}`);
-                }
-
-                console.log('Dados atualizados com sucesso');
-            } else {
-                console.log('App não cadastra usuários que não existem!');
-            }
-        } catch (error) {
-            console.error('Erro ao enviar dados para a Supabase:', error);
-        }
-    } else {
-        console.log('Usuário não fez login!')
-    }
-}
-
-async function init() {
-    await getSecureKey('getSecretTranslateKey');
-    await getSecureKey('getSupabaseKey');
-    await getSecureKey('getUserEmail');
-    await getMyWords();
-
-    chrome.storage.sync.get('targetLanguage', function (data) {
-        targetLanguage = data.targetLanguage || 'pt';
-    });
-
-    document.addEventListener('click', function (event) {
-        const tooltip = document.querySelector('.tooltip');
-        if (tooltip && !event.target.closest('vh-t')) {
-            tooltip.remove();
-        }
-    });
 }
 
 async function translateWord(wordToTranslate) {
@@ -249,8 +345,6 @@ document.addEventListener('dblclick', async function(event) {
 
             document.body.appendChild(teacher);
         }
-
-        await setMyWords();
     }
 });
 

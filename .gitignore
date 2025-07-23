@@ -1,3 +1,5 @@
 .idea
 background.js
 .vs/
+node_modules/
+dist/
