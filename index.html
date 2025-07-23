@@ -29,7 +29,8 @@
             word_phase:word_phase(word, phrase, phase (
               phase
             ))
-          `).eq('user.user', email);
+          `)
+            .eq('user', 1);
 
         if (error) {
             console.error(error);
