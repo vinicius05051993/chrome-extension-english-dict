@@ -25,12 +25,13 @@
         const { data, error } = await supabase
             .from('user_word')
             .select(`
-            *,
-            word_phase:word_phase(word, phrase, phase (
-              phase
-            ))
-          `)
-            .eq('user_word.user', 1);
+    *,
+    word (
+      word,
+      translation
+    )
+  `)
+            .eq('user', 1);
 
         if (error) {
             console.error(error);
