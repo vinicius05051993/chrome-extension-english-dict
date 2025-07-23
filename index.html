@@ -25,20 +25,11 @@
         const { data, error } = await supabase
             .from('user_word')
             .select(`
-                *,
-                user (
-                  id,
-                  user
-                ),
-                word_phase (
-                  phrase,
-                  word,
-                  phase (
-                    phase
-                  )
-                )
-                `)
-            .eq('user.user', email);
+            *,
+            word_phase:word_phase(word, phrase, phase (
+              phase
+            ))
+          `).eq('user.user', email);
 
         if (error) {
             console.error(error);
