@@ -22,63 +22,14 @@
         const params = new URLSearchParams(window.location.search);
         const email = params.get('email');
 
-        // Busca o id do usuário pelo email
-        const { data: userData, error: userError } = await supabase
-            .from('user')
-            .select('id')
-            .eq('user', email)
-            .single();
+        const { data, error } = await supabase.rpc('get_user_words_phases', { user_email: email });
 
-        if (userError || !userData) {
-            console.error(userError || 'Usuário não encontrado');
-            return;
+        if (error) {
+            console.error('Erro ao buscar dados:', error);
+        } else {
+            console.log('Resultado:', data);
+            document.body.insertAdjacentHTML('beforeend', `<pre>${JSON.stringify(data, null, 2)}</pre>`);
         }
-
-// 2. Busca as palavras do usuário
-        // Busca as palavras do usuário (pode retornar várias)
-        const { data: userWords, error: userWordsError } = await supabase
-            .from('user_word')
-            .select('word')
-            .eq('user', userData.id);
-
-        if (userWordsError) {
-            console.error(userWordsError);
-            return;
-        }
-
-        const resultado = [];
-        for (const uw of userWords) {
-            // Busca o nome da palavra (único)
-            const { data: wordData } = await supabase
-                .from('word')
-                .select('word')
-                .eq('id', uw.word)
-                .single();
-
-            // Busca as fases da palavra (pode retornar várias)
-            const { data: wordPhases } = await supabase
-                .from('word_phase')
-                .select('phase')
-                .eq('word', uw.word);
-
-            let phaseName = null;
-            if (wordPhases && wordPhases.length > 0) {
-                // Busca o nome da primeira fase encontrada
-                const { data: phaseData } = await supabase
-                    .from('phase')
-                    .select('phase')
-                    .eq('id', wordPhases[0].phase)
-                    .single();
-                phaseName = phaseData?.phase || null;
-            }
-
-            resultado.push({
-                word: wordData?.word || null,
-                phase: phaseName
-            });
-        }
-
-        console.log(resultado);
     });
 </script>
 
