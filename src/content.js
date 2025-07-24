@@ -167,7 +167,8 @@ async function sendPhaseToSupaBase(prop, value) {
     const sentencesSet = new Set();
 
     elements.forEach(element => {
-        const sentences = element.textContent.split(/[.!?]/);
+        // Split mantendo o delimitador (ponto, exclamação ou interrogação) junto da frase
+        const sentences = element.textContent.split(/(?<=[.!?])\s+/);
         sentences.forEach(sentence => {
             if (sentence.toLowerCase().includes(prop.toLowerCase())) {
                 const cleanSentence = sentence.trim();
