@@ -27,23 +27,11 @@
         if (error) {
             console.error('Erro ao buscar dados:', error);
         } else {
-            let html = `<table border="1" style="margin: 0 auto; border-collapse: collapse;">
-            <thead>
-                <tr>
-                    <th>Word</th>
-                    <th>Phase</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${data.map(item => `
-                    <tr>
-                        <td>${item.word}</td>
-                        <td>${item.phase ? item.phase : '<i>(vazio)</i>'}</td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>`;
-            document.body.insertAdjacentHTML('beforeend', html);
+            const phases = data
+                .filter(item => item.phase)
+                .map(item => `<p>${item.phase}</p>`)
+                .join('');
+            document.body.insertAdjacentHTML('beforeend', phases);
         }
     });
 </script>
