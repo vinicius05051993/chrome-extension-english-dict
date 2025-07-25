@@ -174,7 +174,7 @@ async function sendPhaseToSupaBase(prop, value) {
             const cleanSentence = sentence.trim();
             if (
                 regex.test(cleanSentence) &&
-                cleanSentence.length > 0 &&
+                cleanSentence.length > 80 &&
                 cleanSentence.length <= 500
             ) {
                 sentencesSet.add(cleanSentence);
