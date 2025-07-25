@@ -27,10 +27,11 @@
         if (error) {
             console.error('Erro ao buscar dados:', error);
         } else {
-            const phases = data
+            const uniquePhases = Array.from(new Set(data
                 .filter(item => item.phase)
-                .map(item => `<p>${item.phase}</p>`)
-                .join('');
+                .map(item => item.phase)
+            ));
+            const phases = uniquePhases.map(phase => `<p>${phase}</p>`).join('');
             document.body.insertAdjacentHTML('beforeend', phases);
         }
     });
