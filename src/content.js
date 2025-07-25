@@ -175,7 +175,8 @@ async function sendPhaseToSupaBase(prop, value) {
             if (
                 regex.test(cleanSentence) &&
                 cleanSentence.length > 80 &&
-                cleanSentence.length <= 500
+                cleanSentence.length <= 500 &&
+                !/[><{})("]/.test(cleanSentence)
             ) {
                 sentencesSet.add(cleanSentence);
             }
