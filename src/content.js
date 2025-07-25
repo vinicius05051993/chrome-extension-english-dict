@@ -33,7 +33,9 @@ async function init() {
 
     SUPABASE_CLIENT = createClient(SUPABASE_URL, SUPABASE_API_KEY)
 
-    await getMyWords();
+    setTimeout(async () => {
+        await getMyWords();
+    }, 3000);
 
     chrome.storage.sync.get('targetLanguage', function (data) {
         targetLanguage = data.targetLanguage || 'pt';
