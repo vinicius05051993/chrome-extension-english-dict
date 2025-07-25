@@ -5,8 +5,9 @@ var wordsDontknow = new Proxy({}, {
     set(target, prop, value) {
         if (allowSupaBaseComunication) {
             console.log(`Palavra adicionada: ${prop} = ${value}`);
-            sendWordToSupaBase(prop, value).then(r => console.log(`Palavra ${prop} enviada para Supabase.`));
-            sendPhaseToSupaBase(prop, value).then(r => console.log(`Frases enviadas para Supabase para a palavra ${prop}.`));
+            sendWordToSupaBase(prop, value).then(r =>
+                sendPhaseToSupaBase(prop, value).then(r => console.log(`Frases enviadas para Supabase para a palavra ${prop}.`))
+            );
         }
         target[prop] = value;
         return true;
@@ -92,15 +93,13 @@ async function getOrCreateWordId(word, translation) {
         .single();
 
     if (insertError) {
-        if (insertError.message && insertError.message.includes('key already exists')) {
-            // Palavra já existe, busca novamente o id
-            const { data: retryData, error: retryError } = await SUPABASE_CLIENT
-                .from('word')
-                .select('id')
-                .eq('word', word)
-                .single();
-            if (retryData) return retryData.id;
-        }
+        // Palavra já existe, busca novamente o id
+        const { data: retryData, error: retryError } = await SUPABASE_CLIENT
+            .from('word')
+            .select('id')
+            .eq('word', word)
+            .single();
+        if (retryData) return retryData.id;
         console.error('Erro ao inserir palavra:', insertError);
         return null;
     }
@@ -163,18 +162,20 @@ async function sendPhaseToSupaBase(prop, value) {
     }
 
     // Só busca novas frases se ainda não atingiu o limite
-    const elements = document.querySelectorAll('h1, h2, h3, h4, p, span, div');
+    const elements = document.querySelectorAll('h1, h2, h3, h4, p, span');
     const sentencesSet = new Set();
 
     elements.forEach(element => {
-        // Split mantendo o delimitador (ponto, exclamação ou interrogação) junto da frase
         const sentences = element.textContent.split(/(?<=[.!?])\s+/);
         sentences.forEach(sentence => {
-            if (sentence.toLowerCase().includes(prop.toLowerCase())) {
-                const cleanSentence = sentence.trim();
-                if (cleanSentence.length > 0) {
-                    sentencesSet.add(cleanSentence);
-                }
+            const regex = new RegExp(`\\b${prop}\\b`, 'i');
+            const cleanSentence = sentence.trim();
+            if (
+                regex.test(cleanSentence) &&
+                cleanSentence.length > 0 &&
+                cleanSentence.length <= 500
+            ) {
+                sentencesSet.add(cleanSentence);
             }
         });
     });
