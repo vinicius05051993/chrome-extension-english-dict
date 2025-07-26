@@ -50,62 +50,25 @@ async function init() {
 }
 
 async function getOrCreateUserId(userEmail) {
-    // Busca usuário
-    let { data: userData, error: userError } = await SUPABASE_CLIENT
-        .from('user')
-        .select('id')
-        .eq('user', userEmail)
-        .single();
+    const { data, error } = await SUPABASE_CLIENT
+        .rpc('get_or_create_user_id', { user_email: userEmail });
 
-    if (userError || !userData) {
-        // Insere usuário se não existir
-        const { data: insertData, error: insertError } = await SUPABASE_CLIENT
-            .from('user')
-            .insert({ user: userEmail })
-            .select('id')
-            .single();
-
-        if (insertError) {
-            console.error('Erro ao inserir usuário:', insertError);
-            return null;
-        }
-        return insertData.id;
-    } else {
-        return userData.id;
+    if (error) {
+        console.error('Erro ao chamar função get_or_create_user_id:', error);
+        return null;
     }
+    return data;
 }
 
 async function getOrCreateWordId(word, translation) {
-    // Busca palavra
-    let { data: wordData, error: wordError } = await SUPABASE_CLIENT
-        .from('word')
-        .select('id')
-        .eq('word', word)
-        .single();
+    const { data, error } = await SUPABASE_CLIENT
+        .rpc('get_or_create_word_id', { word_input: word, translation_input: translation });
 
-    if (wordData) {
-        return wordData.id;
-    }
-
-    // Insere palavra se não existir
-    const { data: insertData, error: insertError } = await SUPABASE_CLIENT
-        .from('word')
-        .insert({ word, translation })
-        .select('id')
-        .single();
-
-    if (insertError) {
-        // Palavra já existe, busca novamente o id
-        const { data: retryData, error: retryError } = await SUPABASE_CLIENT
-            .from('word')
-            .select('id')
-            .eq('word', word)
-            .single();
-        if (retryData) return retryData.id;
-        console.error('Erro ao inserir palavra:', insertError);
+    if (error) {
+        console.error('Erro ao chamar função get_or_create_word_id:', error);
         return null;
     }
-    return insertData.id;
+    return data;
 }
 
 async function deleteWordToSupaBase(prop) {
