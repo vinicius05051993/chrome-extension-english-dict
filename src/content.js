@@ -118,33 +118,70 @@ async function sendPhaseToSupaBase(prop, value) {
         return;
     }
 
-    // Busca o id da palavra
     const wordId = await getOrCreateWordId(prop, value);
     if (!wordId) return;
 
-    // Conta quantas frases já existem para essa palavra
-    const { data: phaseData, error: phaseError } = await SUPABASE_CLIENT
-        .from('word_phase')
-        .select('id', { count: 'exact', head: true })
-        .eq('word', wordId);
-
-    if (phaseError) {
-        console.error('Erro ao contar frases:', phaseError);
-        return;
-    }
-
-    if (phaseData && phaseData.length >= maxPhaseQty) {
+    const phaseCount = await getPhaseCount(wordId);
+    if (phaseCount === null || phaseCount >= maxPhaseQty) {
         console.log('Quantidade máxima de frases já cadastrada para essa palavra.');
         return;
     }
 
-    // Só busca novas frases se ainda não atingiu o limite
-    const elements = document.querySelectorAll('h1, h2, h3, h4, p, span');
+    const sentencesSet = await getSupabaseSentences(prop, maxPhaseQty);
+
+    if (phaseCount + sentencesSet.size < maxPhaseQty) {
+        addSentencesFromDOM(prop, sentencesSet, maxPhaseQty - (phaseCount + sentencesSet.size));
+    }
+
+    for (const phase of sentencesSet) {
+        const phaseId = await getOrInsertPhaseId(phase);
+        if (!phaseId) continue;
+
+        await insertWordPhaseRelation(wordId, phaseId, phase);
+    }
+}
+
+async function getPhaseCount(wordId) {
+    const { data, error } = await SUPABASE_CLIENT
+        .from('word_phase')
+        .select('id', { count: 'exact', head: true })
+        .eq('word', wordId);
+
+    if (error) {
+        console.error('Erro ao contar frases:', error);
+        return null;
+    }
+    return data.length;
+}
+
+async function getSupabaseSentences(prop, limit) {
     const sentencesSet = new Set();
+    const { data, error } = await SUPABASE_CLIENT
+        .from('phase')
+        .select('phase')
+        .ilike('phase', `%${prop}%`)
+        .limit(limit);
+
+    if (error) {
+        console.error('Erro ao buscar frases no Supabase:', error);
+    } else if (data && data.length > 0) {
+        data.forEach(item => {
+            const cleanSentence = item.phase.trim();
+            sentencesSet.add(cleanSentence);
+        });
+    }
+    return sentencesSet;
+}
+
+function addSentencesFromDOM(prop, sentencesSet, maxToAdd) {
+    const elements = document.querySelectorAll('h1, h2, h3, h4, p, span');
+    let added = 0;
 
     elements.forEach(element => {
+        if (added >= maxToAdd) return;
         const sentences = element.textContent.split(/(?<=[.!?])\s+/);
         sentences.forEach(sentence => {
+            if (added >= maxToAdd) return;
             const regex = new RegExp(`\\b${prop}\\b`, 'i');
             const cleanSentence = sentence.trim();
             if (
@@ -153,58 +190,34 @@ async function sendPhaseToSupaBase(prop, value) {
                 cleanSentence.length <= 500 &&
                 !/[><{})_'("]/.test(cleanSentence)
             ) {
-                sentencesSet.add(cleanSentence);
+                if (!sentencesSet.has(cleanSentence)) {
+                    sentencesSet.add(cleanSentence);
+                    added++;
+                }
             }
         });
     });
+}
 
-    for (const phase of sentencesSet) {
-        // Verifica se a frase já existe na tabela phase
-        const { data: existing, error: selectError } = await SUPABASE_CLIENT
-            .from('phase')
-            .select('id')
-            .eq('phase', phase)
-            .single();
+async function getOrInsertPhaseId(phase) {
+    const { data, error } = await SUPABASE_CLIENT
+        .rpc('insert_phase', { phase_text: phase });
 
-        let phaseId;
-        if (!existing) {
-            const { data: insertData, error: insertError } = await SUPABASE_CLIENT
-                .from('phase')
-                .insert({ phase })
-                .select('id')
-                .single();
+    if (error) {
+        console.error('Erro ao inserir/buscar frase:', error);
+        return null;
+    }
+    return data;
+}
 
-            if (insertError) {
-                console.error('Erro ao inserir frase:', insertError);
-                continue;
-            }
-            phaseId = insertData.id;
-        } else {
-            phaseId = existing.id;
-        }
+async function insertWordPhaseRelation(wordId, phaseId, phase) {
+    const { error } = await SUPABASE_CLIENT
+        .rpc('ensure_word_phase_relation', { word_id: wordId, phase_id: phaseId });
 
-        // Verifica se a relação já existe em word_phase
-        const { data: relExists, error: relExistsError } = await SUPABASE_CLIENT
-            .from('word_phase')
-            .select('id')
-            .eq('word', wordId)
-            .eq('phase', phaseId)
-            .single();
-
-        if (!relExists) {
-            // Cria relação na word_phase
-            const { error: relError } = await SUPABASE_CLIENT
-                .from('word_phase')
-                .insert({ word: wordId, phase: phaseId });
-
-            if (relError) {
-                console.error('Erro ao vincular frase à palavra:', relError);
-            } else {
-                console.log('Frase vinculada à palavra:', phase);
-            }
-        } else {
-            console.log('Relação word_phase já existe:', phase);
-        }
+    if (error) {
+        console.error('Erro ao vincular frase à palavra:', error);
+    } else {
+        console.log('Frase vinculada à palavra:', phase);
     }
 }
 
