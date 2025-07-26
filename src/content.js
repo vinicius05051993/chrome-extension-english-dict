@@ -414,24 +414,26 @@ document.addEventListener('dblclick', async function(event) {
             delete wordsDontknow[sel];
             removeWordFromVHT(sel);
         } else {
-            const teacher = document.createElement('div');
-            teacher.className = 'teacher';
-
-            const textSpan = document.createElement('span');
             const translateSel = await translateWord(sel);
-            textSpan.textContent = translateSel;
+            if (translateSel) {
+                const teacher = document.createElement('div');
+                teacher.className = 'teacher';
 
-            wordsDontknow[sel] = translateSel;
+                const textSpan = document.createElement('span');
+                textSpan.textContent = translateSel;
 
-            highlightWord(sel, translateSel);
+                wordsDontknow[sel] = translateSel;
 
-            teacher.appendChild(textSpan);
+                highlightWord(sel, translateSel);
 
-            teacher.style.position = 'absolute';
-            teacher.style.left = `${event.pageX}px`;
-            teacher.style.top = `${event.pageY - 50}px`;
+                teacher.appendChild(textSpan);
 
-            document.body.appendChild(teacher);
+                teacher.style.position = 'absolute';
+                teacher.style.left = `${event.pageX}px`;
+                teacher.style.top = `${event.pageY - 50}px`;
+
+                document.body.appendChild(teacher);
+            }
         }
     }
 });
