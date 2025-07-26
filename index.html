@@ -2,9 +2,12 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <title>Meu Site Simples</title>
+    <title>Simple Vocabulary</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        table { margin: 0 auto; border-collapse: collapse; width: 60%; }
+        th, td { border: 1px solid #ccc; padding: 8px 12px; }
+        th { background: #f0f0f0; }
     </style>
 </head>
 <body>
@@ -13,7 +16,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // Busca word.word e phase.phase para o usuário pelo email
     window.addEventListener('DOMContentLoaded', async function () {
         const SUPABASE_URL = 'https://wgkakdbjxdqfdshqodtw.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indna2FrZGJqeGRxZmRzaHFvZHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM2NjQ0NzcsImV4cCI6MjAzOTI0MDQ3N30.yAEn_IPXMxK4holhx9osY8nwHPVQIuF8bPZ7_asV0KM';
@@ -26,13 +28,24 @@
 
         if (error) {
             console.error('Erro ao buscar dados:', error);
+        } else if (data && data.length > 0) {
+            let table = `<table>
+                <thead>
+                    <tr>
+                        <th>Palavra</th>
+                        <th>Frase</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data
+                .filter(item => item.word && item.phase)
+                .map(item => `<tr><td>${item.word}</td><td>${item.phase}</td></tr>`)
+                .join('')}
+                </tbody>
+            </table>`;
+            document.body.insertAdjacentHTML('beforeend', table);
         } else {
-            const uniquePhases = Array.from(new Set(data
-                .filter(item => item.phase)
-                .map(item => item.phase)
-            ));
-            const phases = uniquePhases.map(phase => `<p>${phase}</p>`).join('');
-            document.body.insertAdjacentHTML('beforeend', phases);
+            document.body.insertAdjacentHTML('beforeend', '<p>Nenhum dado encontrado.</p>');
         }
     });
 </script>
