@@ -8,14 +8,19 @@
         table { margin: 0 auto; border-collapse: collapse; width: 60%; }
         th, td { border: 1px solid #ccc; padding: 8px 12px; }
         th { background: #f0f0f0; }
+        #wordSelect { margin-bottom: 20px; width: 250px; height: 100px; }
     </style>
 </head>
 <body>
 <h1>Simple Vocabulary</h1>
 <p>By Meyfel.</p>
+<select id="wordSelect" multiple></select>
+<div id="tableContainer"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+    let allData = [];
+
     window.addEventListener('DOMContentLoaded', async function () {
         const SUPABASE_URL = 'https://wgkakdbjxdqfdshqodtw.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indna2FrZGJqeGRxZmRzaHFvZHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM2NjQ0NzcsImV4cCI6MjAzOTI0MDQ3N30.yAEn_IPXMxK4holhx9osY8nwHPVQIuF8bPZ7_asV0KM';
@@ -27,28 +32,55 @@
         const { data, error } = await supabase.rpc('get_user_words_phases', { user_email: email });
 
         if (error) {
-            console.error('Erro ao buscar dados:', error);
-        } else if (data && data.length > 0) {
-            let table = `<table>
-                <thead>
-                    <tr>
-                        <th>Palavra</th>
-                        <th>Frase</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${data
-                .filter(item => item.word && item.phase)
-                .map(item => `<tr><td>${item.word}</td><td>${item.phase}</td></tr>`)
-                .join('')}
-                </tbody>
-            </table>`;
-            document.body.insertAdjacentHTML('beforeend', table);
-        } else {
-            document.body.insertAdjacentHTML('beforeend', '<p>Nenhum dado encontrado.</p>');
+            document.getElementById('tableContainer').innerHTML = '<p>Erro ao buscar dados.</p>';
+            return;
         }
-    });
-</script>
 
+        allData = (data || []).filter(item => item.word && item.phase);
+
+        // Preenche o multiselect com palavras únicas
+        const wordSelect = document.getElementById('wordSelect');
+        const uniqueWords = [...new Set(allData.map(item => item.word))];
+        uniqueWords.forEach(word => {
+            const option = document.createElement('option');
+            option.value = word;
+            option.textContent = word;
+            wordSelect.appendChild(option);
+        });
+
+        // Exibe a tabela inicialmente com todas as palavras
+        renderTable(allData);
+
+        // Atualiza a tabela ao mudar seleção
+        wordSelect.addEventListener('change', function () {
+            const selected = Array.from(this.selectedOptions).map(opt => opt.value);
+            if (selected.length === 0) {
+                renderTable(allData);
+            } else {
+                const filtered = allData.filter(item => selected.includes(item.word));
+                renderTable(filtered);
+            }
+        });
+    });
+
+    function renderTable(data) {
+        const container = document.getElementById('tableContainer');
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p>Nenhum dado encontrado.</p>';
+            return;
+        }
+        container.innerHTML = `<table>
+            <thead>
+                <tr>
+                    <th>Palavra</th>
+                    <th>Frase</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.map(item => `<tr><td>${item.word}</td><td>${item.phase}</td></tr>`).join('')}
+            </tbody>
+        </table>`;
+    }
+</script>
 </body>
 </html>
