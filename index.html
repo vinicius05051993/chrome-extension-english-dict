@@ -58,6 +58,8 @@
                 const filtered = allData.filter(item => selected.includes(item.word));
                 renderPhrases(filtered);
             }
+
+            window.dispatchEvent(new CustomEvent('simple-vocabulary-change-word-filter', {}));
         });
     });
 
