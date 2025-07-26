@@ -18,7 +18,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     let allData = [];
-    let wordsDontknow = {};
 
     window.addEventListener('DOMContentLoaded', async function () {
         const SUPABASE_URL = 'https://wgkakdbjxdqfdshqodtw.supabase.co';
@@ -47,32 +46,18 @@
             wordSelect.appendChild(option);
         });
 
-        // Inicializa wordsDontknow e destaca ao carregar
-        allData.forEach(item => {
-            wordsDontknow[item.word] = item.translate || '';
-        });
-
+        // Exibe todas as frases inicialmente
         renderPhrases(allData);
-        highlightWords();
 
-        // Atualiza as frases e destaques ao mudar seleção
+        // Atualiza as frases ao mudar seleção
         wordSelect.addEventListener('change', function () {
             const selected = Array.from(this.selectedOptions).map(opt => opt.value);
-            let filtered;
             if (selected.length === 0) {
-                filtered = allData;
+                renderPhrases(allData);
             } else {
-                filtered = allData.filter(item => selected.includes(item.word));
+                const filtered = allData.filter(item => selected.includes(item.word));
+                renderPhrases(filtered);
             }
-            renderPhrases(filtered);
-
-            // Atualiza o objeto wordsDontknow
-            wordsDontknow = {};
-            filtered.forEach(item => {
-                wordsDontknow[item.word] = item.translate || '';
-            });
-
-            highlightWords();
         });
     });
 
@@ -83,64 +68,6 @@
             return;
         }
         container.innerHTML = data.map(item => `<p>${item.phase}</p>`).join('');
-    }
-
-    async function highlightWords() {
-        for (const [wordToWrap, translate] of Object.entries(wordsDontknow)) {
-            highlightWord(wordToWrap, translate);
-        }
-    }
-
-    function highlightWord(wordToWrap, translate) {
-        const elements = document.querySelectorAll('h1, h2, h3, h4, p, span, div');
-
-        elements.forEach(element => {
-            const childNodes = Array.from(element.childNodes);
-
-            childNodes.forEach(node => {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    const regex = new RegExp(`\\b${wordToWrap}\\b`, 'gi');
-                    if (regex.test(node.textContent)) {
-                        const wrappedText = node.textContent.replace(regex, `<vh-t translate="${translate}">${wordToWrap}</vh-t>`);
-                        const tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = wrappedText;
-                        node.replaceWith(...tempDiv.childNodes);
-                    }
-                }
-            });
-
-            addTooltipToElement(element);
-        });
-    }
-
-    function addTooltipToElement(mainElement) {
-        mainElement.querySelectorAll('vh-t').forEach(element => {
-            element.addEventListener('click', function(event) {
-                const existingTooltip = document.querySelector('.tooltip');
-                if (existingTooltip) {
-                    existingTooltip.remove();
-                }
-
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip';
-                tooltip.textContent = element.getAttribute('translate');
-
-                const rect = event.target.getBoundingClientRect();
-
-                tooltip.style.left = `${rect.left + window.scrollX}px`;
-                tooltip.style.top = `${rect.top + window.scrollY - 30}px`;
-
-                document.body.appendChild(tooltip);
-            });
-        });
-
-        // Remove tooltip ao clicar fora
-        document.addEventListener('click', function(e) {
-            if (!e.target.matches('vh-t')) {
-                const existingTooltip = document.querySelector('.tooltip');
-                if (existingTooltip) existingTooltip.remove();
-            }
-        }, { once: true });
     }
 </script>
 </body>
