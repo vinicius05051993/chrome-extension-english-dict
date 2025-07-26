@@ -1,11 +1,10 @@
-var apiTranslateKey;
 var SUPABASE_URL = 'https://wgkakdbjxdqfdshqodtw.supabase.co';
 var SUPABASE_API_KEY;
 var wordsDontknow = new Proxy({}, {
     set(target, prop, value) {
         if (allowSupaBaseComunication) {
             console.log(`Palavra adicionada: ${prop} = ${value}`);
-            sendWordToSupaBase(prop, value).then(r =>
+            saveWordRelationToSupaBase(prop, value).then(r =>
                 sendPhaseToSupaBase(prop, value).then(r => console.log(`Frases enviadas para Supabase para a palavra ${prop}.`))
             );
         }
@@ -24,10 +23,9 @@ var SUPABASE_CLIENT;
 var allowSupaBaseComunication = true;
 var maxPhaseQty = 10;
 
-import { createClient } from '@supabase/supabase-js';
+import {createClient} from '@supabase/supabase-js';
 
 async function init() {
-    await getSecureKey('getSecretTranslateKey');
     await getSecureKey('getSupabaseKey');
     await getSecureKey('getUserEmail');
 
@@ -196,7 +194,7 @@ async function sendPhaseToSupaBase(prop, value) {
     }
 }
 
-async function sendWordToSupaBase(prop, value) {
+async function saveWordRelationToSupaBase(prop, value) {
     if (!currentUser) {
         console.log('Usuário não fez login!');
         return;
@@ -208,26 +206,8 @@ async function sendWordToSupaBase(prop, value) {
 
         if (!userId || !wordId) return;
 
-        // Verifica se a relação já existe
-        const { data: relationData, error: relationError } = await SUPABASE_CLIENT
-            .from('user_word')
-            .select('id')
-            .eq('user', userId)
-            .eq('word', wordId)
-            .single();
-
-        if (relationData) {
-            console.log('Relação já existe, não será inserida novamente.');
-            return;
-        }
-
-        // Insere em user_word se não existir
         const { data, error } = await SUPABASE_CLIENT
-            .from('user_word')
-            .insert({
-                user: userId,
-                word: wordId
-            });
+            .rpc('get_or_create_user_word_id', { user_id: userId, word_id: wordId });
 
         if (error) {
             console.error('Erro ao inserir em user_word:', error);
@@ -294,9 +274,6 @@ async function getSecureKey(keyName) {
         chrome.runtime.sendMessage({ action: keyName }, (response) => {
             if (response) {
                 switch (keyName) {
-                    case 'getSecretTranslateKey':
-                        apiTranslateKey = response.key;
-                        break;
                     case 'getSupabaseKey':
                         SUPABASE_API_KEY = response.key;
                         break;
@@ -352,14 +329,26 @@ async function getMyWords() {
 }
 
 async function translateWord(wordToTranslate) {
-    const url = `https://translation.googleapis.com/language/translate/v2?key=${apiTranslateKey}&q=${encodeURIComponent(wordToTranslate)}&target=${targetLanguage}`;
-
     try {
-        const response = await fetch(url);
-        const data = await response.json();
-        return data.data.translations[0].translatedText;
+        const response = await fetch(SUPABASE_URL + '/functions/v1/translate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                word: wordToTranslate,
+                target: targetLanguage
+            })
+        });
+
+        if (!response.ok) {
+            console.error('Erro ao traduzir:', response.statusText);
+            return null;
+        }
+
+        return await response.text();
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Erro:', error);
         return null;
     }
 }
