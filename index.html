@@ -7,6 +7,22 @@
         body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
         #wordSelect { margin-bottom: 20px; width: 250px; height: 100px; }
         #phrasesContainer p { margin: 10px 0; font-size: 1.1em; }
+        .tooltip {
+            position: absolute;
+            background: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            z-index: 1000;
+            font-size: 1em;
+            pointer-events: none;
+        }
+        vh-t {
+            background: #ffe066;
+            cursor: pointer;
+            border-radius: 3px;
+            padding: 0 2px;
+        }
     </style>
 </head>
 <body>
@@ -18,6 +34,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     let allData = [];
+    let wordsDontknow = {};
 
     window.addEventListener('DOMContentLoaded', async function () {
         const SUPABASE_URL = 'https://wgkakdbjxdqfdshqodtw.supabase.co';
@@ -46,18 +63,32 @@
             wordSelect.appendChild(option);
         });
 
-        // Exibe todas as frases inicialmente
-        renderPhrases(allData);
+        // Inicializa wordsDontknow e destaca ao carregar
+        allData.forEach(item => {
+            wordsDontknow[item.word] = item.translate || '';
+        });
 
-        // Atualiza as frases ao mudar seleção
+        renderPhrases(allData);
+        highlightWords();
+
+        // Atualiza as frases e destaques ao mudar seleção
         wordSelect.addEventListener('change', function () {
             const selected = Array.from(this.selectedOptions).map(opt => opt.value);
+            let filtered;
             if (selected.length === 0) {
-                renderPhrases(allData);
+                filtered = allData;
             } else {
-                const filtered = allData.filter(item => selected.includes(item.word));
-                renderPhrases(filtered);
+                filtered = allData.filter(item => selected.includes(item.word));
             }
+            renderPhrases(filtered);
+
+            // Atualiza o objeto wordsDontknow
+            wordsDontknow = {};
+            filtered.forEach(item => {
+                wordsDontknow[item.word] = item.translate || '';
+            });
+
+            highlightWords();
         });
     });
 
@@ -68,6 +99,64 @@
             return;
         }
         container.innerHTML = data.map(item => `<p>${item.phase}</p>`).join('');
+    }
+
+    async function highlightWords() {
+        for (const [wordToWrap, translate] of Object.entries(wordsDontknow)) {
+            highlightWord(wordToWrap, translate);
+        }
+    }
+
+    function highlightWord(wordToWrap, translate) {
+        const elements = document.querySelectorAll('h1, h2, h3, h4, p, span, div');
+
+        elements.forEach(element => {
+            const childNodes = Array.from(element.childNodes);
+
+            childNodes.forEach(node => {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const regex = new RegExp(`\\b${wordToWrap}\\b`, 'gi');
+                    if (regex.test(node.textContent)) {
+                        const wrappedText = node.textContent.replace(regex, `<vh-t translate="${translate}">${wordToWrap}</vh-t>`);
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = wrappedText;
+                        node.replaceWith(...tempDiv.childNodes);
+                    }
+                }
+            });
+
+            addTooltipToElement(element);
+        });
+    }
+
+    function addTooltipToElement(mainElement) {
+        mainElement.querySelectorAll('vh-t').forEach(element => {
+            element.addEventListener('click', function(event) {
+                const existingTooltip = document.querySelector('.tooltip');
+                if (existingTooltip) {
+                    existingTooltip.remove();
+                }
+
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = element.getAttribute('translate');
+
+                const rect = event.target.getBoundingClientRect();
+
+                tooltip.style.left = `${rect.left + window.scrollX}px`;
+                tooltip.style.top = `${rect.top + window.scrollY - 30}px`;
+
+                document.body.appendChild(tooltip);
+            });
+        });
+
+        // Remove tooltip ao clicar fora
+        document.addEventListener('click', function(e) {
+            if (!e.target.matches('vh-t')) {
+                const existingTooltip = document.querySelector('.tooltip');
+                if (existingTooltip) existingTooltip.remove();
+            }
+        }, { once: true });
     }
 </script>
 </body>
