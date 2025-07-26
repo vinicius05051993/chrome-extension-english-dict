@@ -151,7 +151,7 @@ async function getPhaseCount(wordId) {
         console.error('Erro ao contar frases:', error);
         return null;
     }
-    return data.length;
+    return data ? data.length : 0;
 }
 
 async function getSupabaseSentences(prop, limit) {
@@ -360,7 +360,8 @@ async function translateWord(wordToTranslate) {
         const response = await fetch(SUPABASE_URL + '/functions/v1/translate', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'authorization': 'Bearer ' + SUPABASE_API_KEY
             },
             body: JSON.stringify({
                 word: wordToTranslate,
