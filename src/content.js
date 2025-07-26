@@ -47,7 +47,12 @@ async function init() {
     });
 }
 
+const userIdCache = {};
 async function getOrCreateUserId(userEmail) {
+    if (userIdCache[userEmail]) {
+        return userIdCache[userEmail];
+    }
+
     const { data, error } = await SUPABASE_CLIENT
         .rpc('get_or_create_user_id', { user_email: userEmail });
 
@@ -55,10 +60,18 @@ async function getOrCreateUserId(userEmail) {
         console.error('Erro ao chamar função get_or_create_user_id:', error);
         return null;
     }
+
+    userIdCache[userEmail] = data;
     return data;
 }
 
+const wordIdCache = {};
 async function getOrCreateWordId(word, translation) {
+    const cacheKey = `${word}::${translation}`;
+    if (wordIdCache[cacheKey]) {
+        return wordIdCache[cacheKey];
+    }
+
     const { data, error } = await SUPABASE_CLIENT
         .rpc('get_or_create_word_id', { word_input: word, translation_input: translation });
 
@@ -66,6 +79,7 @@ async function getOrCreateWordId(word, translation) {
         console.error('Erro ao chamar função get_or_create_word_id:', error);
         return null;
     }
+    wordIdCache[cacheKey] = data;
     return data;
 }
 
