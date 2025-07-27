@@ -53,6 +53,7 @@
                 max-width: 98vw;
             }
         }
+        #phrasesContainer p { margin: 10px 0; font-size: 1.1em; }
     </style>
 </head>
 <body>
@@ -61,6 +62,7 @@
 <input id="emailInput" type="email" placeholder="email" required />
 <br>
 <select id="wordSelect" multiple></select>
+<div id="phrasesContainer"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -105,6 +107,11 @@
         const email = params.get('email');
 
         const { data, error } = await supabase.rpc('get_user_words_phases', { user_email: email });
+
+        if (error) {
+            document.getElementById('phrasesContainer').innerHTML = '<p>Erro ao buscar dados.</p>';
+            return;
+        }
 
         allData = (data || []).filter(item => item.word && item.phase);
 
