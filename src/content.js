@@ -33,7 +33,7 @@ async function init() {
 
     setTimeout(async () => {
         await getMyWords();
-    }, 3000);
+    }, 1000);
 
     chrome.storage.sync.get('targetLanguage', function (data) {
         targetLanguage = data.targetLanguage || 'pt';

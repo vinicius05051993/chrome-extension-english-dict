@@ -50,7 +50,10 @@ const msgMultiLanguage = {
 };
 
 let targetlanguage = 'pt';
-let wordsDontknow = {};
+
+function getTrainingLink(email) {
+    return "https://vinicius05051993.github.io/chrome-extension-english-dict/?email=" + email;
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     init().then(r => '');
@@ -78,9 +81,6 @@ document.getElementById('language-select').addEventListener('change', function()
     document.getElementById('info-second-message').innerText = msgMultiLanguage[this.value]['info-second-message'];
 });
 
-let apiTranslateKey;
-let SUPABASE_URL = 'https://wgkakdbjxdqfdshqodtw.supabase.co';
-let SUPABASE_API_KEY;
 let currentUser;
 
 async function getSecureKey(keyName) {
@@ -88,12 +88,6 @@ async function getSecureKey(keyName) {
         chrome.runtime.sendMessage({ action: keyName }, (response) => {
             if (response) {
                 switch (keyName) {
-                    case 'getSecretTranslateKey':
-                        apiTranslateKey = response.key;
-                        break;
-                    case 'getSupabaseKey':
-                        SUPABASE_API_KEY = response.key;
-                        break;
                     case 'getUserEmail':
                         currentUser = response.key;
                         break;
@@ -109,152 +103,7 @@ async function getSecureKey(keyName) {
     });
 }
 
-function fillMyWordsInScreen(words) {
-    let elementContainerWords = document.getElementById('word-dont-know');
-    elementContainerWords.innerHTML = "";
-    for (const [word, translate] of Object.entries(words)) {
-        const textContentDiv = document.createElement('div');
-        textContentDiv.textContent = word;
-        textContentDiv.className = 'word-inside-dont-know';
-
-        textContentDiv.addEventListener('click', function (event) {
-            const existingTooltip = document.querySelector('.tooltip');
-            if (existingTooltip) {
-                existingTooltip.remove();
-            }
-
-            const tooltip = document.createElement('div');
-            tooltip.className = 'tooltip';
-            tooltip.textContent = translate;
-
-            const rect = event.target.getBoundingClientRect();
-
-            tooltip.style.left = `${rect.left + 220 + window.scrollX}px`;
-            tooltip.style.top = `${rect.top + window.scrollY}px`;
-
-            document.body.appendChild(tooltip);
-        });
-
-        elementContainerWords.appendChild(textContentDiv);
-    }
-}
-
-async function getMyWords() {
-    if (currentUser) {
-        const url = `${SUPABASE_URL}/rest/v1/translations?user=eq.${encodeURIComponent(currentUser)}`;
-
-        try {
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'apikey': SUPABASE_API_KEY,
-                    'Authorization': `Bearer ${SUPABASE_API_KEY}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`Erro ao buscar dados: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-
-            if (data.length > 0) {
-                wordsDontknow = JSON.parse(data[0].my_words) || {};
-                fillMyWordsInScreen(wordsDontknow)
-            } else {
-                console.log('Nenhum dado encontrado para este usuário.');
-            }
-        } catch (error) {
-            console.error('Erro ao buscar dados da Supabase:', error);
-        }
-    } else {
-        console.log('Usuário não fez login!')
-    }
-}
-
-document.addEventListener('click', function (event) {
-    if (!event.target.closest('.word-dont-know')) {
-        const existingTeacher = document.querySelector('.tooltip');
-        if (existingTeacher) {
-            existingTeacher.remove();
-        }
-    }
-});
-
-async function setMyWords() {
-    if (currentUser) {
-        const url = `${SUPABASE_URL}/rest/v1/translations?user=eq.${encodeURIComponent(currentUser)}`;
-
-        try {
-            const checkResponse = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'apikey': SUPABASE_API_KEY,
-                    'Authorization': `Bearer ${SUPABASE_API_KEY}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal'
-                }
-            });
-
-            const checkData = await checkResponse.json();
-
-            if (checkData.length > 0) {
-                const updateUrl = `${SUPABASE_URL}/rest/v1/translations?user=eq.${encodeURIComponent(currentUser)}`;
-
-                const updateResponse = await fetch(updateUrl, {
-                    method: 'PATCH',
-                    headers: {
-                        'apikey': SUPABASE_API_KEY,
-                        'Authorization': `Bearer ${SUPABASE_API_KEY}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        my_words: wordsDontknow
-                    })
-                });
-
-                if (!updateResponse.ok) {
-                    throw new Error(`Erro ao atualizar os dados: ${updateResponse.statusText}`);
-                }
-
-                console.log('Dados atualizados com sucesso');
-            } else {
-               console.log('App não cadastra usuários que não existem!');
-            }
-        } catch (error) {
-            console.log('Erro ao enviar dados para a Supabase');
-            console.log(error)
-        }
-    } else {
-        console.log('Usuário não fez login!')
-    }
-}
-
-document.addEventListener('dblclick', async function (event) {
-    let sel = (document.selection && document.selection.createRange().text) ||
-        (window.getSelection && window.getSelection().toString());
-    sel = sel.replace(' ', '');
-
-    if (event.ctrlKey && sel !== '') {
-        const existingTeacher = document.querySelector('.tooltip');
-        if (existingTeacher) {
-            existingTeacher.remove();
-        }
-
-        if (sel in wordsDontknow) {
-            delete wordsDontknow[sel];
-        }
-
-        await setMyWords();
-        fillMyWordsInScreen(wordsDontknow)
-    }
-});
-
 async function init() {
-    await getSecureKey('getSecretTranslateKey');
-    await getSecureKey('getSupabaseKey');
     await getSecureKey('getUserEmail');
-    await getMyWords();
+    document.getElementById('training-link').href = getTrainingLink(currentUser);
 }
