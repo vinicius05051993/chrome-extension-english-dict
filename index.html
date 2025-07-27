@@ -146,7 +146,7 @@
     function renderPhrases(data) {
         const container = document.getElementById('phrasesContainer');
         if (!data || data.length === 0) {
-            container.innerHTML = '<p>Nenhuma frase encontrada.</p>';
+            container.innerHTML = '';
             return;
         }
         container.innerHTML = data.map(item => `<p>${item.phase}</p>`).join('');
