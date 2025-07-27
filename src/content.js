@@ -177,28 +177,25 @@ async function getSupabaseSentences(prop, limit) {
 }
 
 function addSentencesFromDOM(prop, sentencesSet, maxToAdd) {
+    const forbiddenChars = /[!?:;\(\)\[\]\{\}«»\-–—…\/\\|@#$%&\*\^_=+<>]/;
     const elements = document.querySelectorAll('h1, h2, h3, h4, p, span');
     let added = 0;
 
     elements.forEach(element => {
         if (added >= maxToAdd) return;
-        const sentences = element.textContent.split(/(?<=[.!?])\s+/);
-        sentences.forEach(sentence => {
-            if (added >= maxToAdd) return;
-            const regex = new RegExp(`\\b${prop}\\b`, 'i');
-            const cleanSentence = sentence.trim();
-            if (
-                regex.test(cleanSentence) &&
-                cleanSentence.length > 80 &&
-                cleanSentence.length <= 500 &&
-                !/[><{})_'("]/.test(cleanSentence)
-            ) {
-                if (!sentencesSet.has(cleanSentence)) {
-                    sentencesSet.add(cleanSentence);
-                    added++;
-                }
+        const cleanText = element.textContent.trim();
+        const regex = new RegExp(`\\b${prop}\\b`, 'i');
+        if (
+            regex.test(cleanText) &&
+            cleanText.length > 80 &&
+            cleanText.length <= 500 &&
+            !forbiddenChars.test(cleanText)
+        ) {
+            if (!sentencesSet.has(cleanText)) {
+                sentencesSet.add(cleanText);
+                added++;
             }
-        });
+        }
     });
 }
 
