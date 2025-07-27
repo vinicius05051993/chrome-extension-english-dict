@@ -5,6 +5,16 @@
     <title>Simple Vocabulary</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        #emailInput {
+            margin-bottom: 16px;
+            padding: 8px;
+            width: 100%;
+            max-width: 350px;
+            border: 1.5px solid #bdbdbd;
+            border-radius: 8px;
+            font-size: 1.1em;
+            box-sizing: border-box;
+        }
         #wordSelect {
             margin-bottom: 20px;
             width: 100%;
@@ -30,13 +40,15 @@
             padding: 8px 6px;
             font-size: 1em;
         }
-
-        /* Mobile ajustes */
         @media (max-width: 600px) {
             #wordSelect {
                 font-size: 1em;
                 height: 160px;
                 min-width: 0;
+                width: 98vw;
+                max-width: 98vw;
+            }
+            #emailInput {
                 width: 98vw;
                 max-width: 98vw;
             }
@@ -46,13 +58,45 @@
 </head>
 <body>
 <h1>Simple Vocabulary</h1>
-<p>By Meyfel.</p>
+<p>By Meyfel</p>
+<input id="emailInput" type="email" placeholder="Digite seu e-mail" required />
+<br>
 <select id="wordSelect" multiple></select>
 <div id="phrasesContainer"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     let allData = [];
+
+    // Preenche o input de e-mail se já houver na URL
+    function getEmailFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('email') || '';
+    }
+
+    function setEmailToUrl(email) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('email', email);
+        window.location.search = params.toString();
+    }
+
+    document.getElementById('emailInput').value = getEmailFromUrl();
+
+    document.getElementById('emailInput').addEventListener('change', function(e) {
+        const email = e.target.value.trim();
+        if (email) {
+            setEmailToUrl(email);
+        }
+    });
+
+    document.getElementById('emailInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const email = e.target.value.trim();
+            if (email) {
+                setEmailToUrl(email);
+            }
+        }
+    });
 
     window.addEventListener('DOMContentLoaded', async function () {
         const SUPABASE_URL = 'https://wgkakdbjxdqfdshqodtw.supabase.co';
@@ -61,6 +105,11 @@
 
         const params = new URLSearchParams(window.location.search);
         const email = params.get('email');
+
+        if (!email) {
+            document.getElementById('phrasesContainer').innerHTML = '<p>Digite seu e-mail acima para ver as frases.</p>';
+            return;
+        }
 
         const { data, error } = await supabase.rpc('get_user_words_phases', { user_email: email });
 
@@ -73,6 +122,7 @@
 
         // Preenche o multiselect com palavras únicas
         const wordSelect = document.getElementById('wordSelect');
+        wordSelect.innerHTML = '';
         const uniqueWords = [...new Set(allData.map(item => item.word))];
         uniqueWords.forEach(word => {
             const option = document.createElement('option');
