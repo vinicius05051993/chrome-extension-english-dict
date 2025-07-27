@@ -3,7 +3,6 @@ var SUPABASE_API_KEY;
 var wordsDontknow = new Proxy({}, {
     set(target, prop, value) {
         if (allowSupaBaseComunication) {
-            console.log(`Palavra adicionada: ${prop} = ${value}`);
             saveWordRelationToSupaBase(prop, value).then(r =>
                 sendPhaseToSupaBase(prop, value).then(r => console.log(`Frases enviadas para Supabase para a palavra ${prop}.`))
             );
@@ -67,13 +66,17 @@ async function getOrCreateUserId(userEmail) {
 
 const wordIdCache = {};
 async function getOrCreateWordId(word, translation) {
-    const cacheKey = `${word}::${translation}`;
+    const cacheKey = `${word}::${translation}::${targetLanguage}`;
     if (wordIdCache[cacheKey]) {
         return wordIdCache[cacheKey];
     }
 
     const { data, error } = await SUPABASE_CLIENT
-        .rpc('get_or_create_word_id', { word_input: word, translation_input: translation });
+        .rpc('get_or_create_word_id', {
+            word_input: word,
+            translation_input: translation,
+            target_input: targetLanguage
+        });
 
     if (error) {
         console.error('Erro ao chamar função get_or_create_word_id:', error);
@@ -325,13 +328,15 @@ async function getMyWords() {
             const { data, error } = await SUPABASE_CLIENT
                 .from('user')
                 .select(`
-                user_word (
-                  word (
-                    word,
-                    translation
-                  )
-                )
-              `).eq('user', currentUser)
+                    user_word (
+                      word (
+                        word,
+                        translation
+                      )
+                    )
+                `)
+                .eq('user', currentUser)
+                .eq('user_word.word.target', targetLanguage)
 
             allowSupaBaseComunication = false;
             data.forEach(item => {
