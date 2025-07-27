@@ -446,4 +446,8 @@ document.addEventListener('click', function() {
     }
 });
 
+window.addEventListener('simple-vocabulary-change-word-filter', function(e) {
+    highlightWords();
+});
+
 init().then(r => "");
