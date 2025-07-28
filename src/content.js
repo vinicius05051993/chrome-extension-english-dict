@@ -181,7 +181,7 @@ function addSentencesFromDOM(prop, sentencesSet, maxToAdd) {
     const elements = document.querySelectorAll('h1, h2, h3, h4, p, span');
     let added = 0;
 
-    elements.forEach(element => {
+    (elements || []).forEach(element => {
         if (added >= maxToAdd) return;
         const cleanText = element.textContent.trim();
         const regex = new RegExp(`\\b${prop}\\b`, 'i');
@@ -255,10 +255,10 @@ async function highlightWords() {
 function highlightWord(wordToWrap, translate) {
     const elements = document.querySelectorAll('h1, h2, h3, h4, p, span, div');
 
-    elements.forEach(element => {
+    (elements || []).forEach(element => {
         const childNodes = Array.from(element.childNodes);
 
-        childNodes.forEach(node => {
+        (childNodes || []).forEach(node => {
             if (node.nodeType === Node.TEXT_NODE) {
                 const regex = new RegExp(`\\b${wordToWrap}\\b`, 'gi');
                 if (regex.test(node.textContent)) {
@@ -275,7 +275,7 @@ function highlightWord(wordToWrap, translate) {
 }
 
 function addTooltipToElement(mainElement) {
-    mainElement.querySelectorAll('vh-t').forEach(element => {
+    (mainElement.querySelectorAll('vh-t') || []).forEach(element => {
         element.addEventListener('click', function(event) {
             const existingTooltip = document.querySelector('.tooltip');
             if (existingTooltip) {
@@ -336,7 +336,7 @@ async function getMyWords() {
                 .eq('user_word.word.target', targetLanguage)
 
             allowSupaBaseComunication = false;
-            data.forEach(item => {
+            (data || []).forEach(item => {
                 if (item.user_word && Array.isArray(item.user_word)) {
                     item.user_word.forEach(uw => {
                         if (uw.word && uw.word.word && uw.word.translation) {
@@ -386,7 +386,7 @@ async function translateWord(wordToTranslate) {
 function removeWordFromVHT(wordToUnwrap) {
     const elements = document.querySelectorAll('vh-t');
 
-    elements.forEach(element => {
+    (elements || []).forEach(element => {
         if (element.textContent === wordToUnwrap) {
             const parent = element.parentNode;
             const textNode = document.createTextNode(wordToUnwrap);
