@@ -114,7 +114,7 @@
             return;
         }
 
-        allData = (data || []).filter(item => item.word && item.phase);
+        allData = (data || []).filter(item => item.word);
 
         // Preenche o multiselect com palavras únicas
         const wordSelect = document.getElementById('wordSelect');
