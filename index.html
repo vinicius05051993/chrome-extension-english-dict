@@ -150,7 +150,9 @@
             container.innerHTML = '';
             return;
         }
-        container.innerHTML = data.map(item => `<p>${item.phase}</p>`).join('');
+        container.innerHTML = data.map(item =>
+            `<p>${item.phase ? item.phase : item.word}</p>`
+        ).join('');
     }
 </script>
 </body>
