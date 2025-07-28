@@ -177,7 +177,7 @@ async function getSupabaseSentences(prop, limit) {
 }
 
 function addSentencesFromDOM(prop, sentencesSet, maxToAdd) {
-    const forbiddenChars = /[!?:;\(\)\[\]\{\}«»\-–—…\/\\|@#$%&\*\^_=+<>]/;
+    const forbiddenChars = /[!?:;\(\)\[\]\{\}«»–—…\/\\|@#$%&\*\^_=+<>]/;
     const elements = document.querySelectorAll('h1, h2, h3, h4, p, span');
     let added = 0;
 
